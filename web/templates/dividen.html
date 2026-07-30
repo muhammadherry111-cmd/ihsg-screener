@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kalender Dividen — GUFRON Screener</title>
+<style>
+:root{
+  --bg0:#060d1a;--bg1:#09121f;--bg2:#0d1a2b;--bg3:#122035;--bg4:#172640;
+  --border:#1c2e42;--border2:#243d57;
+  --g:#00d97e;--g2:#009e5c;--g-a:rgba(0,217,126,.1);
+  --r:#ff3d5a;--r2:#c42a42;--r-a:rgba(255,61,90,.1);
+  --b:#38b6ff;--b2:#1a8fd1;--b-a:rgba(56,182,255,.1);
+  --y:#ffcc00;--y2:#c99f00;--y-a:rgba(255,204,0,.1);
+  --gold:#f59e0b;--gold2:#d97706;
+  --t1:#e8f1fc;--t2:#7fa8c9;--t3:#3a566e;
+  --f-mono:'JetBrains Mono','Fira Code','Consolas',monospace;
+  --r6:6px;--r10:10px;--r16:16px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{min-height:100%;background:var(--bg0);color:var(--t1);font-family:'Inter','Segoe UI',system-ui,sans-serif;font-size:13px}
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+header{display:flex;align-items:center;gap:14px;padding:0 20px;height:56px;background:var(--bg1);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50}
+.logo{display:flex;align-items:center;gap:9px;font-weight:800;font-size:15px;text-decoration:none}
+.logo-icon{width:30px;height:30px;background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.logo-text{background:linear-gradient(135deg,#f59e0b,#d97706);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.back-btn{margin-left:auto;display:flex;align-items:center;gap:6px;padding:7px 14px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r10);color:var(--t2);font-size:12px;font-weight:600;cursor:pointer;text-decoration:none;transition:.15s}
+.back-btn:hover{border-color:var(--gold);color:var(--gold)}
+#clock{font-size:12px;color:var(--t3);font-family:var(--f-mono)}
+.page{max-width:1400px;margin:0 auto;padding:20px 20px 40px}
+
+.banner{background:linear-gradient(135deg,rgba(245,158,11,.12),rgba(217,119,6,.07));border:1px solid rgba(245,158,11,.3);border-radius:var(--r16);padding:24px 28px;margin-bottom:24px;display:flex;align-items:flex-start;gap:20px}
+.banner-icon{font-size:48px;flex-shrink:0}
+.banner-title{font-size:22px;font-weight:900;background:linear-gradient(135deg,#f59e0b,#d97706);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px}
+.banner-sub{font-size:12px;color:var(--t3);line-height:1.7;max-width:700px}
+.info-pills{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+.pill{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.3px}
+.pill-gold{background:rgba(245,158,11,.12);border:1px solid var(--gold2);color:var(--gold)}
+.pill-g{background:var(--g-a);border:1px solid var(--g2);color:var(--g)}
+
+.controls{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r16);padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.ctrl-group{display:flex;flex-direction:column;gap:6px}
+.ctrl-label{font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.7px}
+.ctrl-val{font-size:28px;font-weight:800;color:var(--gold);letter-spacing:-1px;line-height:1}
+input[type=range]{width:220px;accent-color:var(--gold);height:4px;cursor:pointer}
+.scan-btn{display:flex;align-items:center;gap:8px;padding:12px 24px;background:linear-gradient(135deg,#f59e0b,#d97706);border:none;border-radius:var(--r10);color:#000;font-size:13px;font-weight:800;cursor:pointer;transition:.2s;letter-spacing:.4px;box-shadow:0 4px 14px rgba(245,158,11,.4);white-space:nowrap}
+.scan-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(245,158,11,.55)}
+.scan-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.ctrl-hint{font-size:11px;color:var(--t3);line-height:1.6;border-left:2px solid var(--gold);padding-left:10px;max-width:360px}
+
+#progress-box{display:none;background:var(--bg1);border:1px solid var(--border);border-radius:var(--r16);padding:20px 24px;margin-bottom:20px}
+.prog-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.prog-tk{font-size:14px;font-weight:700;color:var(--gold);font-family:var(--f-mono)}
+.prog-ct{font-size:12px;color:var(--t3);font-family:var(--f-mono)}
+.prog-bar-wrap{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.prog-bar{height:100%;width:0%;background:linear-gradient(90deg,#f59e0b,#d97706);border-radius:3px;transition:width .4s}
+.prog-found{font-size:12px;color:var(--gold);margin-top:8px;min-height:18px}
+
+/* Kalender Grid */
+#calendar-view{display:none}
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.cal-title{font-size:16px;font-weight:800;color:var(--t1)}
+.cal-sub{font-size:11px;color:var(--t3)}
+
+.months-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+@media(max-width:900px){.months-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:600px){.months-grid{grid-template-columns:repeat(2,1fr)}}
+
+.month-card{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r16);overflow:hidden;transition:.2s}
+.month-card.has-data{border-color:rgba(245,158,11,.35)}
+.month-card:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,.4)}
+
+.month-hd{background:linear-gradient(135deg,rgba(245,158,11,.15),rgba(217,119,6,.08));border-bottom:1px solid rgba(245,158,11,.2);padding:10px 14px;display:flex;align-items:center;justify-content:space-between}
+.month-name{font-size:13px;font-weight:800;color:var(--gold)}
+.month-count{font-size:11px;font-weight:700;font-family:var(--f-mono);color:var(--t3)}
+.month-count.has{color:var(--gold)}
+
+.month-body{padding:10px 0;max-height:280px;overflow-y:auto}
+.div-item{padding:7px 14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);gap:8px}
+.div-item:last-child{border-bottom:none}
+.div-tk{font-size:12px;font-weight:800;color:var(--t1);font-family:var(--f-mono);flex-shrink:0}
+.div-yield{font-size:11px;font-weight:700;color:var(--g)}
+.div-sector{font-size:10px;color:var(--t3);text-align:right;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.div-empty{padding:16px 14px;color:var(--t3);font-size:11px;text-align:center;font-style:italic}
+
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r10);padding:14px;text-align:center}
+.stat-val{font-size:26px;font-weight:800;font-family:var(--f-mono);line-height:1}
+.stat-lbl{font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-top:4px}
+
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:60px 20px;color:var(--t3);text-align:center}
+.empty-state h3{font-size:16px;color:var(--t2);margin-top:4px}
+.empty-state p{font-size:12px;line-height:1.7;max-width:380px}
+.empty-icon{font-size:56px;opacity:.3;margin-bottom:4px}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{animation:spin .75s linear infinite;display:inline-block;border:2px solid transparent;border-top-color:currentColor;border-radius:50%;width:14px;height:14px;vertical-align:middle}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">
+    <div class="logo-icon">💰</div>
+    <span class="logo-text">Kalender Dividen</span>
+  </div>
+  <span style="font-size:11px;color:var(--t3);background:var(--bg3);border:1px solid var(--border);padding:3px 10px;border-radius:20px">GUFRON Screener</span>
+  <span id="clock" style="margin-left:10px"></span>
+  <a href="/" class="back-btn">← Kembali ke Screener</a>
+</header>
+<div class="page">
+  <div class="banner">
+    <div class="banner-icon">💰</div>
+    <div>
+      <div class="banner-title">Kalender Dividen — Jadwal Pembagian per Bulan</div>
+      <div class="banner-sub">
+        Lihat emiten IDX yang membagikan dividen berdasarkan <strong>bulan pembayaran</strong>, diurutkan dari Januari hingga Desember. Data berdasarkan riwayat dividen 12 bulan terakhir dari Yahoo Finance. Cocok untuk merencanakan pendapatan pasif dari dividen saham.
+      </div>
+      <div class="info-pills">
+        <span class="pill pill-gold">📅 Jan – Des Terurut</span>
+        <span class="pill pill-g">💵 Dividend Yield</span>
+      </div>
+    </div>
+  </div>
+  <div class="controls">
+    <div class="ctrl-group">
+      <div class="ctrl-label">Jumlah Emiten di-scan</div>
+      <div class="ctrl-val" id="max-v">200</div>
+      <input type="range" id="max-r" min="50" max="500" step="50" value="200"
+        oninput="document.getElementById('max-v').textContent=this.value">
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--t3);margin-top:4px;width:220px">
+        <span>50</span><span>250</span><span>500</span>
+      </div>
+    </div>
+    <button class="scan-btn" id="scan-btn" onclick="startScan()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Buat Kalender Dividen
+    </button>
+    <div class="ctrl-hint">
+      📅 Scan akan mengambil <strong>riwayat dividen 12 bulan terakhir</strong> dari setiap emiten.<br>
+      Hasilnya disajikan per bulan dari Januari sampai Desember.<br>
+      ⚠️ Data berdasarkan pembayaran tahun lalu — bukan jaminan dividen tahun ini.
+    </div>
+  </div>
+  <div id="progress-box">
+    <div class="prog-hd">
+      <span class="prog-tk" id="prog-tk">Mempersiapkan...</span>
+      <span class="prog-ct" id="prog-ct">0 / 0</span>
+    </div>
+    <div class="prog-bar-wrap"><div class="prog-bar" id="prog-bar"></div></div>
+    <div class="prog-found" id="prog-found"></div>
+  </div>
+
+  <div id="init-state">
+    <div class="empty-state">
+      <div class="empty-icon">💰</div>
+      <h3>Belum ada data dividen</h3>
+      <p>Klik <strong>Buat Kalender Dividen</strong> untuk melihat jadwal pembagian dividen emiten IDX per bulan dari Januari hingga Desember.</p>
+    </div>
+  </div>
+
+  <div id="calendar-view">
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-val" id="st-total" style="color:var(--b)">0</div><div class="stat-lbl">Emiten Dianalisis</div></div>
+      <div class="stat-card"><div class="stat-val" id="st-div" style="color:var(--gold)">0</div><div class="stat-lbl">Emiten Berdividen</div></div>
+      <div class="stat-card"><div class="stat-val" id="st-entries" style="color:var(--g)">0</div><div class="stat-lbl">Total Entri Dividen</div></div>
+    </div>
+    <div class="cal-header">
+      <div>
+        <div class="cal-title">📅 Kalender Dividen IDX</div>
+        <div class="cal-sub" id="cal-note"></div>
+      </div>
+    </div>
+    <div class="months-grid" id="months-grid"></div>
+  </div>
+</div>
+
+<script>
+const MONTHS=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+// monthData[0..11] = array of {ticker, company_name, sector, dividend_yield, amount}
+let monthData=Array.from({length:12},()=>[]);
+let totalDiv=0, totalEntries=0, es=null;
+
+function tick(){const n=new Date(),wib=new Date(n.getTime()+(7*60-n.getTimezoneOffset())*60000);document.getElementById('clock').textContent=wib.toISOString().replace('T',' ').slice(0,19)+' WIB';}
+setInterval(tick,1000);tick();
+
+function startScan(){
+  if(es){es.close();es=null;}
+  monthData=Array.from({length:12},()=>[]);
+  totalDiv=0;totalEntries=0;
+  const max=document.getElementById('max-r').value;
+  document.getElementById('scan-btn').disabled=true;
+  document.getElementById('scan-btn').innerHTML='<span class="spin" style="border-top-color:#000"></span> Scanning...';
+  document.getElementById('progress-box').style.display='block';
+  document.getElementById('init-state').style.display='none';
+  document.getElementById('calendar-view').style.display='none';
+  document.getElementById('prog-bar').style.width='0%';
+  document.getElementById('prog-found').textContent='';
+
+  es=new EventSource(`/api/dividen?max=${max}`);
+  es.onmessage=e=>{
+    const d=JSON.parse(e.data);
+    if(d.type==='progress'){
+      const pct=(d.current/d.total*100).toFixed(1);
+      document.getElementById('prog-bar').style.width=pct+'%';
+      document.getElementById('prog-ct').textContent=`${d.current} / ${d.total}`;
+      document.getElementById('prog-tk').textContent='⟳ '+d.ticker+'...';
+    } else if(d.type==='result'){
+      const r=d.data;
+      totalDiv++;
+      const seen=new Set();
+      (r.dividend_months||[]).forEach(m=>{
+        const idx=m.month-1;
+        if(idx>=0&&idx<12&&!seen.has(idx)){
+          seen.add(idx);
+          monthData[idx].push({
+            ticker:r.ticker,
+            company_name:r.company_name,
+            sector:r.sector,
+            dividend_yield:r.dividend_yield,
+            amount:m.amount,
+          });
+          totalEntries++;
+        }
+      });
+      document.getElementById('prog-found').textContent=`💰 ${totalDiv} emiten berdividen ditemukan...`;
+      renderCalendar();
+    } else if(d.type==='complete'){
+      es.close();es=null;
+      document.getElementById('progress-box').style.display='none';
+      document.getElementById('calendar-view').style.display='block';
+      document.getElementById('st-total').textContent=d.total_tickers;
+      document.getElementById('st-div').textContent=totalDiv;
+      document.getElementById('st-entries').textContent=totalEntries;
+      document.getElementById('cal-note').textContent=`Data riwayat dividen 12 bulan terakhir — ${totalDiv} emiten ditemukan dari ${d.total_tickers} yang dianalisis`;
+      document.getElementById('scan-btn').disabled=false;
+      document.getElementById('scan-btn').innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Refresh Kalender';
+      renderCalendar();
+    } else if(d.type==='error'){
+      es.close();es=null;
+      document.getElementById('scan-btn').disabled=false;
+      document.getElementById('scan-btn').textContent='Buat Kalender Dividen';
+      document.getElementById('progress-box').style.display='none';
+      document.getElementById('init-state').style.display='block';
+      document.getElementById('init-state').innerHTML=`<div class="empty-state"><h3>⚠️ Error</h3><p>${d.message}</p></div>`;
+    }
+  };
+  es.onerror=()=>{if(es){es.close();es=null;}document.getElementById('scan-btn').disabled=false;};
+}
+
+function renderCalendar(){
+  document.getElementById('calendar-view').style.display='block';
+  document.getElementById('months-grid').innerHTML=MONTHS.map((mn,mi)=>{
+    const items=[...monthData[mi]].sort((a,b)=>(b.dividend_yield||0)-(a.dividend_yield||0));
+    const hasData=items.length>0;
+    return `<div class="month-card${hasData?' has-data':''}">
+      <div class="month-hd">
+        <div class="month-name">${mn}</div>
+        <div class="month-count${hasData?' has':''}">${items.length} emiten</div>
+      </div>
+      <div class="month-body">
+        ${hasData?items.map(it=>`<div class="div-item">
+          <div class="div-tk">${it.ticker}</div>
+          <div class="div-yield">${it.dividend_yield?it.dividend_yield.toFixed(1)+'%':'—'}</div>
+          <div class="div-sector">${it.sector||'—'}</div>
+        </div>`).join(''):'<div class="div-empty">Tidak ada dividen bulan ini</div>'}
+      </div>
+    </div>`;
+  }).join('');
+}
+</script>
+</body>
+</html>

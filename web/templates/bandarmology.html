@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bandarmology Signal — GUFRON Screener</title>
+<style>
+:root{
+  --bg0:#060d1a;--bg1:#09121f;--bg2:#0d1a2b;--bg3:#122035;--bg4:#172640;
+  --border:#1c2e42;--border2:#243d57;
+  --g:#00d97e;--g2:#009e5c;--g-a:rgba(0,217,126,.1);
+  --r:#ff3d5a;--r2:#c42a42;--r-a:rgba(255,61,90,.1);
+  --b:#38b6ff;--b2:#1a8fd1;--b-a:rgba(56,182,255,.1);
+  --y:#ffcc00;--y2:#c99f00;--y-a:rgba(255,204,0,.1);
+  --p:#c084fc;--o:#fb923c;--p2:#9333ea;
+  --t1:#e8f1fc;--t2:#7fa8c9;--t3:#3a566e;
+  --f-mono:'JetBrains Mono','Fira Code','Consolas',monospace;
+  --r6:6px;--r10:10px;--r16:16px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{min-height:100%;background:var(--bg0);color:var(--t1);font-family:'Inter','Segoe UI',system-ui,sans-serif;font-size:13px}
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+header{display:flex;align-items:center;gap:14px;padding:0 20px;height:56px;background:var(--bg1);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50}
+.logo{display:flex;align-items:center;gap:9px;font-weight:800;font-size:15px;text-decoration:none}
+.logo-icon{width:30px;height:30px;background:linear-gradient(135deg,#c084fc,#9333ea);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.logo-text{background:linear-gradient(135deg,#c084fc,#9333ea);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.back-btn{margin-left:auto;display:flex;align-items:center;gap:6px;padding:7px 14px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r10);color:var(--t2);font-size:12px;font-weight:600;cursor:pointer;text-decoration:none;transition:.15s}
+.back-btn:hover{border-color:var(--p);color:var(--p)}
+#clock{font-size:12px;color:var(--t3);font-family:var(--f-mono)}
+.page{max-width:1400px;margin:0 auto;padding:20px 20px 40px}
+
+.banner{background:linear-gradient(135deg,rgba(192,132,252,.12),rgba(147,51,234,.08));border:1px solid rgba(192,132,252,.3);border-radius:var(--r16);padding:24px 28px;margin-bottom:24px;display:flex;align-items:flex-start;gap:20px}
+.banner-icon{font-size:48px;flex-shrink:0}
+.banner-title{font-size:22px;font-weight:900;background:linear-gradient(135deg,#c084fc,#9333ea);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px}
+.banner-sub{font-size:12px;color:var(--t3);line-height:1.7;max-width:700px}
+.info-pills{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+.pill{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.3px}
+.pill-p{background:rgba(192,132,252,.12);border:1px solid var(--p2);color:var(--p)}
+.pill-g{background:var(--g-a);border:1px solid var(--g2);color:var(--g)}
+.pill-b{background:var(--b-a);border:1px solid var(--b2);color:var(--b)}
+
+.controls{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r16);padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.ctrl-group{display:flex;flex-direction:column;gap:6px}
+.ctrl-label{font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.7px}
+.ctrl-val{font-size:28px;font-weight:800;color:var(--p);letter-spacing:-1px;line-height:1}
+input[type=range]{width:220px;accent-color:var(--p);height:4px;cursor:pointer}
+.scan-btn{display:flex;align-items:center;gap:8px;padding:12px 24px;background:linear-gradient(135deg,#c084fc,#7c3aed);border:none;border-radius:var(--r10);color:#fff;font-size:13px;font-weight:800;cursor:pointer;transition:.2s;letter-spacing:.4px;box-shadow:0 4px 14px rgba(192,132,252,.4);white-space:nowrap}
+.scan-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(192,132,252,.55)}
+.scan-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.ctrl-hint{font-size:11px;color:var(--t3);line-height:1.6;border-left:2px solid var(--p);padding-left:10px;max-width:340px}
+
+#progress-box{display:none;background:var(--bg1);border:1px solid var(--border);border-radius:var(--r16);padding:20px 24px;margin-bottom:20px}
+.prog-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.prog-tk{font-size:14px;font-weight:700;color:var(--p);font-family:var(--f-mono)}
+.prog-ct{font-size:12px;color:var(--t3);font-family:var(--f-mono)}
+.prog-bar-wrap{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.prog-bar{height:100%;width:0%;background:linear-gradient(90deg,#c084fc,#7c3aed);border-radius:3px;transition:width .4s}
+.prog-found{font-size:12px;color:var(--p);margin-top:8px;min-height:18px}
+
+#stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;display:none}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r10);padding:14px;text-align:center}
+.stat-val{font-size:26px;font-weight:800;font-family:var(--f-mono);line-height:1}
+.stat-lbl{font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-top:4px}
+
+#results-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px}
+
+.bm-card{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r16);padding:18px;cursor:pointer;transition:.2s;position:relative;overflow:hidden}
+.bm-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#c084fc,#7c3aed)}
+.bm-card:hover{border-color:rgba(192,132,252,.5);transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,.5)}
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+.card-tk{font-size:22px;font-weight:900;letter-spacing:.5px}
+.card-score{font-size:28px;font-weight:900;font-family:var(--f-mono);color:var(--p);line-height:1}
+.card-score small{font-size:10px;color:var(--t3);font-weight:400}
+.card-price{font-size:16px;font-weight:700;font-family:var(--f-mono);color:var(--t2);margin-bottom:4px}
+.card-chg{font-size:13px;font-weight:700;margin-bottom:12px}
+.up{color:var(--g)}.dn{color:var(--r)}
+
+.accum-box{background:linear-gradient(135deg,rgba(192,132,252,.1),rgba(147,51,234,.06));border:1px solid rgba(192,132,252,.25);border-radius:var(--r10);padding:12px 14px;margin-bottom:12px}
+.accum-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.accum-row:last-child{margin-bottom:0}
+.accum-lbl{font-size:10px;font-weight:700;color:rgba(192,132,252,.8);text-transform:uppercase;letter-spacing:.5px}
+.accum-val{font-size:14px;font-weight:800;font-family:var(--f-mono);color:var(--p)}
+
+.card-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.cm{background:var(--bg3);border-radius:var(--r6);padding:8px 10px;text-align:center}
+.cm-lbl{font-size:8px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.cm-val{font-size:14px;font-weight:800;font-family:var(--f-mono)}
+
+.pola-badge{display:inline-flex;align-items:center;padding:4px 10px;border-radius:20px;font-size:10px;font-weight:800;letter-spacing:.4px;margin-bottom:6px}
+.pb-bk{background:var(--g-a);color:var(--g);border:1px solid var(--g2)}
+.pb-mk{background:rgba(0,217,126,.12);color:#4dffaa;border:1px solid rgba(0,217,126,.3)}
+.pb-ak{background:var(--p-a,rgba(192,132,252,.1));color:var(--p);border:1px solid var(--p2)}
+.pb-di{background:var(--r-a);color:var(--r);border:1px solid var(--r2)}
+
+/* Wyckoff phase badge */
+.wk-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:9px;font-weight:800;letter-spacing:.4px;margin-bottom:6px}
+.wk-acc{background:rgba(56,182,255,.1);color:var(--b);border:1px solid var(--b2)}
+.wk-mkp{background:var(--g-a);color:var(--g);border:1px solid var(--g2)}
+.wk-dist{background:var(--r-a);color:var(--r);border:1px solid var(--r2)}
+.wk-mdn{background:rgba(255,61,90,.08);color:#ff6080;border:1px solid var(--r2)}
+.wk-unk{background:var(--bg3);color:var(--t3);border:1px solid var(--border)}
+
+/* Skor bar */
+.score-bar-wrap{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;margin:6px 0 10px}
+.score-bar{height:100%;border-radius:3px;transition:width .6s ease}
+
+/* Trap warning */
+.trap-box{background:rgba(255,61,90,.08);border:1px solid var(--r2);border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:11px;color:var(--r);line-height:1.5}
+
+/* Rekomendasi badge */
+.rec-entry{background:var(--g-a);color:var(--g);border:1px solid var(--g2)}
+.rec-pantau{background:var(--y-a);color:var(--y);border:1px solid var(--y2)}
+.rec-hindari{background:var(--r-a);color:var(--r);border:1px solid var(--r2)}
+
+.rank-badge{position:absolute;top:14px;right:14px;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;font-family:var(--f-mono)}
+.rank-1{background:linear-gradient(135deg,#ffd700,#f59e0b);color:#000}
+.rank-2{background:linear-gradient(135deg,#c0c0c0,#9ca3af);color:#000}
+.rank-3{background:linear-gradient(135deg,#cd7f32,#92400e);color:#fff}
+.rank-other{background:var(--bg3);color:var(--t2);border:1px solid var(--border2)}
+
+.card-signal{font-size:11px;color:var(--t3);line-height:1.5;border-top:1px solid var(--border);padding-top:10px;margin-top:4px}
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:800;letter-spacing:.4px;border:1px solid}
+.b-sb{color:var(--g);border-color:var(--g2);background:var(--g-a)}
+.b-b{color:var(--g);border-color:rgba(0,158,92,.5);background:rgba(0,217,126,.06)}
+.b-np{color:var(--b);border-color:var(--b2);background:var(--b-a)}
+.b-n{color:var(--t2);border-color:var(--border2);background:transparent}
+.b-nm{color:var(--y);border-color:var(--y2);background:var(--y-a)}
+.b-h{color:var(--r);border-color:var(--r2);background:var(--r-a)}
+
+.empty-state{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:60px 20px;color:var(--t3);text-align:center}
+.empty-state h3{font-size:16px;color:var(--t2);margin-top:4px}
+.empty-state p{font-size:12px;line-height:1.7;max-width:340px}
+.empty-icon{font-size:56px;opacity:.3;margin-bottom:4px}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{animation:spin .75s linear infinite;display:inline-block;border:2px solid transparent;border-top-color:currentColor;border-radius:50%;width:14px;height:14px;vertical-align:middle}
+@keyframes cardIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.bm-card{animation:cardIn .25s ease both}
+@media(max-width:640px){
+  #stats-bar{grid-template-columns:repeat(2,1fr)}
+  .controls{flex-direction:column;align-items:flex-start}
+  .banner{flex-direction:column;gap:12px}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">
+    <div class="logo-icon">🕵️</div>
+    <span class="logo-text">Bandarmology Signal</span>
+  </div>
+  <span style="font-size:11px;color:var(--t3);background:var(--bg3);border:1px solid var(--border);padding:3px 10px;border-radius:20px">GUFRON Screener</span>
+  <span id="clock" style="margin-left:10px"></span>
+  <a href="/" class="back-btn">← Kembali ke Screener</a>
+</header>
+<div class="page">
+  <div class="banner">
+    <div class="banner-icon">🕵️</div>
+    <div>
+      <div class="banner-title">Bandarmology Signal — Deteksi Akumulasi Bandar</div>
+      <div class="banner-sub">
+        Scan otomatis untuk menemukan emiten yang sedang <strong>diakumulasi oleh smart money (bandar)</strong> sebelum harga naik signifikan. Menggunakan analisis OBV, MFI, Chaikin A/D, VPT, dan pola volume untuk mendeteksi pergerakan diam-diam institusi sebelum harga bergerak besar.
+      </div>
+      <div class="info-pills">
+        <span class="pill pill-p">🔮 OBV Divergence Bullish</span>
+        <span class="pill pill-g">📈 Akumulasi Diam-diam</span>
+        <span class="pill pill-b">💧 MFI &amp; Chaikin A/D</span>
+      </div>
+    </div>
+  </div>
+  <div class="controls">
+    <div class="ctrl-group">
+      <div class="ctrl-label">Jumlah Emiten</div>
+      <div class="ctrl-val" id="max-v">150</div>
+      <input type="range" id="max-r" min="50" max="500" step="50" value="150"
+        oninput="document.getElementById('max-v').textContent=this.value">
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--t3);margin-top:4px;width:220px">
+        <span>50</span><span>250</span><span>500</span>
+      </div>
+    </div>
+    <button class="scan-btn" id="scan-btn" onclick="startScan()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Mulai Scan Bandar
+    </button>
+    <div class="ctrl-hint">
+      🕵️ Deteksi akumulasi <strong>sebelum harga naik besar</strong>.<br>
+      Kandidat = emiten dengan pola AKUMULASI/MARKING UP/BREAKOUT + skor komposit ≥ 8.<br>
+      ⚠️ Gunakan sebagai referensi — bukan rekomendasi beli.
+    </div>
+  </div>
+  <div id="progress-box">
+    <div class="prog-hd">
+      <span class="prog-tk" id="prog-tk">Mempersiapkan...</span>
+      <span class="prog-ct" id="prog-ct">0 / 0</span>
+    </div>
+    <div class="prog-bar-wrap"><div class="prog-bar" id="prog-bar"></div></div>
+    <div class="prog-found" id="prog-found"></div>
+  </div>
+  <div id="stats-bar">
+    <div class="stat-card"><div class="stat-val" id="st-total" style="color:var(--b)">0</div><div class="stat-lbl">Emiten Dianalisis</div></div>
+    <div class="stat-card"><div class="stat-val" id="st-found" style="color:var(--p)">0</div><div class="stat-lbl">Kandidat Bandar</div></div>
+    <div class="stat-card"><div class="stat-val" id="st-bk" style="color:var(--g)">0</div><div class="stat-lbl">Pola Breakout</div></div>
+    <div class="stat-card"><div class="stat-val" id="st-div" style="color:var(--p)">0</div><div class="stat-lbl">OBV Divergence</div></div>
+  </div>
+  <div id="results-grid">
+    <div class="empty-state">
+      <div class="empty-icon">🕵️</div>
+      <h3>Belum ada hasil scan</h3>
+      <p>Klik <strong>Mulai Scan Bandar</strong> untuk menemukan emiten yang sedang diakumulasi smart money secara diam-diam.</p>
+    </div>
+  </div>
+</div>
+<script>
+let RESULTS=[], es=null;
+function tick(){const n=new Date(),wib=new Date(n.getTime()+(7*60-n.getTimezoneOffset())*60000);document.getElementById('clock').textContent=wib.toISOString().replace('T',' ').slice(0,19)+' WIB';}
+setInterval(tick,1000);tick();
+const fmt=n=>n==null?'—':new Intl.NumberFormat('id-ID').format(Math.round(n));
+const bCls=r=>({'STRONG BUY':'b-sb','BUY':'b-b','NETRAL+':'b-np','NETRAL':'b-n','NETRAL-':'b-nm','HINDARI':'b-h'}[r]||'b-n');
+const polaCls=p=>({'BREAKOUT':'pb-bk','MARKING UP':'pb-mk','AKUMULASI':'pb-ak'}[p]||'');
+
+function startScan(){
+  if(es){es.close();es=null;}
+  RESULTS=[];
+  const max=document.getElementById('max-r').value;
+  document.getElementById('scan-btn').disabled=true;
+  document.getElementById('scan-btn').innerHTML='<span class="spin"></span> Scanning...';
+  document.getElementById('progress-box').style.display='block';
+  document.getElementById('stats-bar').style.display='none';
+  document.getElementById('results-grid').innerHTML='<div class="empty-state"><div class="empty-icon">⏳</div><h3>Sedang scanning...</h3><p>Mendeteksi akumulasi bandar secara real-time...</p></div>';
+  document.getElementById('prog-bar').style.width='0%';
+  document.getElementById('prog-found').textContent='';
+
+  es=new EventSource(`/api/bandarmology?max=${max}`);
+  es.onmessage=e=>{
+    const d=JSON.parse(e.data);
+    if(d.type==='progress'){
+      const pct=(d.current/d.total*100).toFixed(1);
+      document.getElementById('prog-bar').style.width=pct+'%';
+      document.getElementById('prog-ct').textContent=`${d.current} / ${d.total}`;
+      document.getElementById('prog-tk').textContent='⟳ '+d.ticker+'...';
+    } else if(d.type==='result'){
+      RESULTS.push(d.data);
+      document.getElementById('prog-found').textContent=`🕵️ ${RESULTS.length} kandidat bandar ditemukan...`;
+      renderResults();
+    } else if(d.type==='complete'){
+      es.close();es=null;
+      document.getElementById('progress-box').style.display='none';
+      document.getElementById('stats-bar').style.display='grid';
+      document.getElementById('st-total').textContent=d.total_tickers;
+      document.getElementById('st-found').textContent=RESULTS.length;
+      document.getElementById('st-bk').textContent=RESULTS.filter(r=>r.bandar.pola==='BREAKOUT').length;
+      document.getElementById('st-div').textContent=RESULTS.filter(r=>r.bandar.obv_divergence==='BULLISH').length;
+      document.getElementById('scan-btn').disabled=false;
+      document.getElementById('scan-btn').innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Scan Ulang';
+      if(!RESULTS.length){
+        document.getElementById('results-grid').innerHTML='<div class="empty-state"><div class="empty-icon">😔</div><h3>Tidak ada kandidat bandar ditemukan</h3><p>Coba scan lebih banyak emiten.</p></div>';
+      }
+    } else if(d.type==='error'){
+      es.close();es=null;
+      document.getElementById('scan-btn').disabled=false;
+      document.getElementById('scan-btn').textContent='Mulai Scan Bandar';
+      document.getElementById('progress-box').style.display='none';
+      document.getElementById('results-grid').innerHTML=`<div class="empty-state"><h3>⚠️ Error</h3><p>${d.message}</p></div>`;
+    }
+  };
+  es.onerror=()=>{if(es){es.close();es=null;}document.getElementById('scan-btn').disabled=false;};
+}
+
+const wkCls = p => ({'ACCUMULATION':'wk-acc','MARKUP':'wk-mkp','DISTRIBUTION':'wk-dist','MARKDOWN':'wk-mdn'}[p]||'wk-unk');
+const wkIcon = p => ({'ACCUMULATION':'🧲','MARKUP':'🚀','DISTRIBUTION':'⚠️','MARKDOWN':'📉','UNKNOWN':'❓'}[p]||'❓');
+const recCls = r => ({'ENTRY':'rec-entry','PANTAU':'rec-pantau','HINDARI':'rec-hindari'}[r]||'rec-pantau');
+const scoreBarColor = s => s >= 70 ? '#00d97e' : s >= 50 ? '#38b6ff' : s >= 35 ? '#ffcc00' : '#ff3d5a';
+
+function renderResults(){
+  if(!RESULTS.length) return;
+  const sorted=[...RESULTS].sort((a,b)=>b.bandar_composite_score-a.bandar_composite_score);
+  document.getElementById('results-grid').innerHTML=sorted.map((r,i)=>{
+    const up    = r.change_pct >= 0;
+    const pola  = r.bandar.pola;
+    const polac = polaCls(pola);
+    const rankCls = i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-other';
+    const signal  = r.bandar?.signals?.[0] || r.signals?.[0] || '';
+    const cveStr  = r.bandar.current_vs_entry >= 0
+      ? `+${r.bandar.current_vs_entry.toFixed(1)}%`
+      : `${r.bandar.current_vs_entry.toFixed(1)}%`;
+    const cveColor   = r.bandar.current_vs_entry >= 0 ? 'var(--g)' : 'var(--r)';
+    const obvDiv     = r.bandar.obv_divergence === 'BULLISH';
+    const wk         = r.bandar.wyckoff_phase || 'UNKNOWN';
+    const trap       = r.bandar.trap_detected || 'TIDAK ADA';
+    const rec        = r.bandar.recommendation || 'PANTAU';
+    const scorePct   = r.bandar.bandar_score_pct || 0;
+    const vSpike     = r.bandar.volume_spike;
+    const vSpikeRatio= r.bandar.volume_spike_ratio || 0;
+
+    const trapHtml = trap !== 'TIDAK ADA'
+      ? `<div class="trap-box">🚨 ${r.bandar.trap_warning || trap}</div>`
+      : '';
+
+    return `<div class="bm-card" style="animation-delay:${Math.min(i*.05,.5)}s;cursor:pointer" onclick="openDetailModal('${r.ticker}')" title="Klik untuk detail ${r.ticker}">
+      <div class="rank-badge ${rankCls}">${i+1}</div>
+
+      <div class="card-top">
+        <div>
+          <div class="card-tk">${r.ticker}</div>
+          <div style="display:flex;align-items:center;gap:5px;margin-top:4px;flex-wrap:wrap">
+            <span class="badge ${bCls(r.recommendation)}">${r.recommendation}</span>
+            <span class="badge ${recCls(rec)}">${rec==='ENTRY'?'✅ ':rec==='HINDARI'?'🚫 ':'👁 '}${rec}</span>
+            ${obvDiv?'<span style="background:rgba(192,132,252,.15);border:1px solid var(--p2);color:var(--p);padding:2px 7px;border-radius:10px;font-size:9px;font-weight:700">OBV DIV</span>':''}
+            ${vSpike?`<span style="background:rgba(251,146,60,.1);border:1px solid #c2600a;color:#fb923c;padding:2px 7px;border-radius:10px;font-size:9px;font-weight:700">⚡${vSpikeRatio.toFixed(1)}×</span>`:''}
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div class="card-score">${scorePct.toFixed(0)}<small>/100</small></div>
+          <div style="font-size:9px;color:var(--t3)">Bandar Score</div>
+        </div>
+      </div>
+
+      <!-- Score bar -->
+      <div class="score-bar-wrap">
+        <div class="score-bar" style="width:${scorePct}%;background:${scoreBarColor(scorePct)}"></div>
+      </div>
+
+      <div class="card-price">Rp ${fmt(r.last_price)}</div>
+      <div class="card-chg ${up?'up':'dn'}">${up?'+':''}${r.change_pct.toFixed(2)}% hari ini</div>
+
+      <!-- Pola & Wyckoff -->
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap">
+        ${polac?`<span class="pola-badge ${polac}">${pola}</span>`:''}
+        <span class="wk-badge ${wkCls(wk)}">${wkIcon(wk)} Wyckoff: ${wk}</span>
+      </div>
+
+      <!-- Trap warning -->
+      ${trapHtml}
+
+      <!-- Akumulasi box -->
+      <div class="accum-box">
+        <div class="accum-row">
+          <div class="accum-lbl">Avg Entry Bandar</div>
+          <div class="accum-val">Rp ${fmt(r.bandar.avg_bandar_entry)||'—'}</div>
+        </div>
+        <div class="accum-row">
+          <div class="accum-lbl">Akumulasi sejak</div>
+          <div class="accum-val">${r.bandar.accum_start_date||'—'} (${r.bandar.accum_days||0}H)</div>
+        </div>
+        <div class="accum-row">
+          <div class="accum-lbl">Harga vs Entry</div>
+          <div style="font-size:14px;font-weight:800;font-family:var(--f-mono);color:${cveColor}">${cveStr}</div>
+        </div>
+      </div>
+
+      <!-- Metrics grid -->
+      <div class="card-metrics">
+        <div class="cm"><div class="cm-lbl">OBV</div>
+          <div class="cm-val" style="color:${r.bandar.obv_trend==='NAIK'?'var(--g)':r.bandar.obv_trend==='TURUN'?'var(--r)':'var(--t2)'}">
+            ${r.bandar.obv_trend}</div></div>
+        <div class="cm"><div class="cm-lbl">MFI</div>
+          <div class="cm-val" style="color:${r.bandar.mfi>=60?'var(--g)':r.bandar.mfi<30?'var(--r)':'var(--t2)'}">
+            ${r.bandar.mfi.toFixed(0)}</div></div>
+        <div class="cm"><div class="cm-lbl">A/D</div>
+          <div class="cm-val" style="color:${r.bandar.ad_trend==='AKUMULASI'?'var(--g)':r.bandar.ad_trend==='DISTRIBUSI'?'var(--r)':'var(--t2)'};font-size:10px">
+            ${r.bandar.ad_trend}</div></div>
+        <div class="cm"><div class="cm-lbl">VPT</div>
+          <div class="cm-val" style="color:${r.bandar.vpt_trend==='BULLISH'?'var(--g)':r.bandar.vpt_trend==='BEARISH'?'var(--r)':'var(--t2)'};font-size:10px">
+            ${r.bandar.vpt_trend}</div></div>
+        <div class="cm"><div class="cm-lbl">RSI</div>
+          <div class="cm-val" style="color:${r.rsi<30?'var(--g)':r.rsi>70?'var(--r)':'var(--t2)'}">
+            ${r.rsi.toFixed(0)}</div></div>
+        <div class="cm"><div class="cm-lbl">VWAP</div>
+          <div class="cm-val" style="color:${r.bandar.vwap_position==='DI ATAS'?'var(--g)':'var(--r)'};font-size:10px">
+            ${r.bandar.vwap_position==='DI ATAS'?'↑ ATAS':'↓ BAWAH'}</div></div>
+      </div>
+
+      ${signal?`<div class="card-signal">💡 ${signal}</div>`:''}
+    </div>`;
+  }).join('');
+}
+</script>
+{% include '_detail_modal.html' %}
+</body>
+</html>

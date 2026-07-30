@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Invest Suggestion — GUFRON Screener</title>
+<style>
+:root{
+  --bg0:#060d1a;--bg1:#09121f;--bg2:#0d1a2b;--bg3:#122035;--bg4:#172640;
+  --border:#1c2e42;--border2:#243d57;
+  --g:#00d97e;--g2:#009e5c;--g-a:rgba(0,217,126,.1);
+  --r:#ff3d5a;--r2:#c42a42;--r-a:rgba(255,61,90,.1);
+  --b:#38b6ff;--b2:#1a8fd1;--b-a:rgba(56,182,255,.1);
+  --y:#ffcc00;--y2:#c99f00;--y-a:rgba(255,204,0,.1);
+  --teal:#2dd4bf;--teal2:#0d9488;
+  --t1:#e8f1fc;--t2:#7fa8c9;--t3:#3a566e;
+  --f-mono:'JetBrains Mono','Fira Code','Consolas',monospace;
+  --r6:6px;--r10:10px;--r16:16px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{min-height:100%;background:var(--bg0);color:var(--t1);font-family:'Inter','Segoe UI',system-ui,sans-serif;font-size:13px}
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+header{display:flex;align-items:center;gap:14px;padding:0 20px;height:56px;background:var(--bg1);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50}
+.logo{display:flex;align-items:center;gap:9px;font-weight:800;font-size:15px;text-decoration:none}
+.logo-icon{width:30px;height:30px;background:linear-gradient(135deg,#2dd4bf,#0d9488);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.logo-text{background:linear-gradient(135deg,#2dd4bf,#0d9488);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.back-btn{margin-left:auto;display:flex;align-items:center;gap:6px;padding:7px 14px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r10);color:var(--t2);font-size:12px;font-weight:600;cursor:pointer;text-decoration:none;transition:.15s}
+.back-btn:hover{border-color:var(--teal);color:var(--teal)}
+#clock{font-size:12px;color:var(--t3);font-family:var(--f-mono)}
+.page{max-width:1400px;margin:0 auto;padding:20px 20px 40px}
+
+.banner{background:linear-gradient(135deg,rgba(45,212,191,.1),rgba(13,148,136,.07));border:1px solid rgba(45,212,191,.3);border-radius:var(--r16);padding:24px 28px;margin-bottom:24px;display:flex;align-items:flex-start;gap:20px}
+.banner-icon{font-size:48px;flex-shrink:0}
+.banner-title{font-size:22px;font-weight:900;background:linear-gradient(135deg,#2dd4bf,#0d9488);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px}
+.banner-sub{font-size:12px;color:var(--t3);line-height:1.7;max-width:700px}
+.info-pills{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+.pill{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.3px}
+.pill-t{background:rgba(45,212,191,.12);border:1px solid var(--teal2);color:var(--teal)}
+.pill-g{background:var(--g-a);border:1px solid var(--g2);color:var(--g)}
+.pill-y{background:var(--y-a);border:1px solid var(--y2);color:var(--y)}
+
+.controls{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r16);padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.ctrl-group{display:flex;flex-direction:column;gap:6px}
+.ctrl-label{font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.7px}
+.ctrl-val{font-size:28px;font-weight:800;color:var(--teal);letter-spacing:-1px;line-height:1}
+input[type=range]{width:220px;accent-color:var(--teal);height:4px;cursor:pointer}
+.scan-btn{display:flex;align-items:center;gap:8px;padding:12px 24px;background:linear-gradient(135deg,#2dd4bf,#0d9488);border:none;border-radius:var(--r10);color:#000;font-size:13px;font-weight:800;cursor:pointer;transition:.2s;letter-spacing:.4px;box-shadow:0 4px 14px rgba(45,212,191,.4);white-space:nowrap}
+.scan-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(45,212,191,.55)}
+.scan-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.ctrl-hint{font-size:11px;color:var(--t3);line-height:1.6;border-left:2px solid var(--teal);padding-left:10px;max-width:360px}
+
+#progress-box{display:none;background:var(--bg1);border:1px solid var(--border);border-radius:var(--r16);padding:20px 24px;margin-bottom:20px}
+.prog-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.prog-tk{font-size:14px;font-weight:700;color:var(--teal);font-family:var(--f-mono)}
+.prog-ct{font-size:12px;color:var(--t3);font-family:var(--f-mono)}
+.prog-bar-wrap{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.prog-bar{height:100%;width:0%;background:linear-gradient(90deg,#2dd4bf,#0d9488);border-radius:3px;transition:width .4s}
+.prog-found{font-size:12px;color:var(--teal);margin-top:8px;min-height:18px}
+
+#stats-bar{display:none;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r10);padding:14px;text-align:center}
+.stat-val{font-size:26px;font-weight:800;font-family:var(--f-mono);line-height:1}
+.stat-lbl{font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-top:4px}
+
+#results-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:14px}
+
+.inv-card{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r16);padding:18px;transition:.2s;position:relative;overflow:hidden}
+.inv-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#2dd4bf,#0d9488)}
+.inv-card:hover{border-color:rgba(45,212,191,.5);transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,.5)}
+
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px}
+.card-tk{font-size:20px;font-weight:900;letter-spacing:.5px}
+.card-name{font-size:11px;color:var(--t3);margin-top:2px;line-height:1.4;max-width:180px}
+.card-sector{font-size:10px;color:var(--teal);margin-top:2px;font-weight:600}
+.inv-score-box{text-align:right}
+.inv-score-num{font-size:28px;font-weight:900;font-family:var(--f-mono);color:var(--teal);line-height:1}
+.inv-score-lbl{font-size:9px;color:var(--t3)}
+
+.outlook-box{border-radius:var(--r10);padding:10px 12px;margin-bottom:12px;border:1px solid}
+.ol-sm{border-color:rgba(0,217,126,.3);background:rgba(0,217,126,.08)}
+.ol-m{border-color:rgba(45,212,191,.3);background:rgba(45,212,191,.08)}
+.ol-n{border-color:rgba(56,182,255,.25);background:rgba(56,182,255,.07)}
+.ol-b{border-color:rgba(255,204,0,.25);background:rgba(255,204,0,.07)}
+.ol-sb{border-color:rgba(255,61,90,.3);background:rgba(255,61,90,.08)}
+.outlook-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.outlook-reason{font-size:11px;color:var(--t3);line-height:1.5}
+
+.metrics-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.cm{background:var(--bg3);border-radius:var(--r6);padding:8px 10px;text-align:center}
+.cm-lbl{font-size:8px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.cm-val{font-size:13px;font-weight:800;font-family:var(--f-mono)}
+
+.asset-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:11px}
+.asset-row:last-child{border-bottom:none;font-weight:700}
+.asset-lbl{color:var(--t3)}
+.asset-val{color:var(--t2);font-family:var(--f-mono);font-weight:600}
+
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:800;letter-spacing:.4px;border:1px solid}
+.b-sb{color:var(--g);border-color:var(--g2);background:var(--g-a)}
+.b-b{color:var(--g);border-color:rgba(0,158,92,.5);background:rgba(0,217,126,.06)}
+.b-np{color:var(--b);border-color:var(--b2);background:var(--b-a)}
+.b-n{color:var(--t2);border-color:var(--border2);background:transparent}
+.b-nm{color:var(--y);border-color:var(--y2);background:var(--y-a)}
+.b-h{color:var(--r);border-color:var(--r2);background:var(--r-a)}
+
+.rank-badge{position:absolute;top:14px;right:14px;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;font-family:var(--f-mono)}
+.rank-1{background:linear-gradient(135deg,#ffd700,#f59e0b);color:#000}
+.rank-2{background:linear-gradient(135deg,#c0c0c0,#9ca3af);color:#000}
+.rank-3{background:linear-gradient(135deg,#cd7f32,#92400e);color:#fff}
+.rank-other{background:var(--bg3);color:var(--t2);border:1px solid var(--border2)}
+
+.empty-state{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:60px 20px;color:var(--t3);text-align:center}
+.empty-state h3{font-size:16px;color:var(--t2);margin-top:4px}
+.empty-state p{font-size:12px;line-height:1.7;max-width:380px}
+.empty-icon{font-size:56px;opacity:.3;margin-bottom:4px}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{animation:spin .75s linear infinite;display:inline-block;border:2px solid transparent;border-top-color:currentColor;border-radius:50%;width:14px;height:14px;vertical-align:middle}
+@keyframes cardIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.inv-card{animation:cardIn .25s ease both}
+@media(max-width:640px){
+  #stats-bar{grid-template-columns:repeat(2,1fr)}
+  .controls{flex-direction:column;align-items:flex-start}
+  .banner{flex-direction:column;gap:12px}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">
+    <div class="logo-icon">🌱</div>
+    <span class="logo-text">Invest Suggestion</span>
+  </div>
+  <span style="font-size:11px;color:var(--t3);background:var(--bg3);border:1px solid var(--border);padding:3px 10px;border-radius:20px">GUFRON Screener</span>
+  <span id="clock" style="margin-left:10px"></span>
+  <a href="/" class="back-btn">← Kembali ke Screener</a>
+</header>
+<div class="page">
+  <div class="banner">
+    <div class="banner-icon">🌱</div>
+    <div>
+      <div class="banner-title">Invest Suggestion — Saran Emiten Terbaik Masa Depan</div>
+      <div class="banner-sub">
+        Temukan emiten yang layak dijadikan <strong>investasi jangka panjang</strong> untuk masa depan. Analisis berdasarkan fundamental kuat: ROE tinggi, utang rendah, pertumbuhan konsisten, valuasi wajar, dan potensi dividen. Cocok untuk membangun portofolio jangka panjang 5–20 tahun ke depan.
+      </div>
+      <div class="info-pills">
+        <span class="pill pill-t">📊 Skor Fundamental ≥ 7</span>
+        <span class="pill pill-g">💰 ROE &amp; Pertumbuhan Tinggi</span>
+        <span class="pill pill-y">🎯 Outlook Masa Depan</span>
+      </div>
+    </div>
+  </div>
+  <div class="controls">
+    <div class="ctrl-group">
+      <div class="ctrl-label">Jumlah Emiten di-scan</div>
+      <div class="ctrl-val" id="max-v">100</div>
+      <input type="range" id="max-r" min="50" max="300" step="50" value="100"
+        oninput="document.getElementById('max-v').textContent=this.value">
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--t3);margin-top:4px;width:220px">
+        <span>50</span><span>175</span><span>300</span>
+      </div>
+    </div>
+    <button class="scan-btn" id="scan-btn" onclick="startScan()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Cari Saham Terbaik
+    </button>
+    <div class="ctrl-hint">
+      🌱 Scan membutuhkan waktu lebih lama karena mengambil data <strong>fundamental dari Yahoo Finance</strong> per emiten.<br>
+      Filter: skor investasi ≥ 7. Diurutkan berdasarkan skor investasi × outlook.<br>
+      ⚠️ Investasi selalu memiliki risiko — diversifikasi portofolio Anda.
+    </div>
+  </div>
+  <div id="progress-box">
+    <div class="prog-hd">
+      <span class="prog-tk" id="prog-tk">Mempersiapkan...</span>
+      <span class="prog-ct" id="prog-ct">0 / 0</span>
+    </div>
+    <div class="prog-bar-wrap"><div class="prog-bar" id="prog-bar"></div></div>
+    <div class="prog-found" id="prog-found"></div>
+  </div>
+  <div id="stats-bar" style="display:none">
+    <div class="stat-card"><div class="stat-val" id="st-total" style="color:var(--b)">0</div><div class="stat-lbl">Emiten Dianalisis</div></div>
+    <div class="stat-card"><div class="stat-val" id="st-found" style="color:var(--teal)">0</div><div class="stat-lbl">Kandidat Layak</div></div>
+    <div class="stat-card"><div class="stat-val" id="st-sb" style="color:var(--g)">0</div><div class="stat-lbl">Strong Buy</div></div>
+    <div class="stat-card"><div class="stat-val" id="st-prom" style="color:var(--teal)">0</div><div class="stat-lbl">Outlook Menjanjikan</div></div>
+  </div>
+  <div id="results-grid">
+    <div class="empty-state">
+      <div class="empty-icon">🌱</div>
+      <h3>Belum ada hasil scan</h3>
+      <p>Klik <strong>Cari Saham Terbaik</strong> untuk menemukan emiten dengan fundamental kuat yang layak dijadikan investasi jangka panjang.</p>
+    </div>
+  </div>
+</div>
+<script>
+let RESULTS=[], es=null;
+function tick(){const n=new Date(),wib=new Date(n.getTime()+(7*60-n.getTimezoneOffset())*60000);document.getElementById('clock').textContent=wib.toISOString().replace('T',' ').slice(0,19)+' WIB';}
+setInterval(tick,1000);tick();
+const fmt=n=>n==null?'—':new Intl.NumberFormat('id-ID').format(Math.round(n));
+const fmtT=v=>{if(!v||v<=0)return'—';if(v>=1e12)return`Rp ${(v/1e12).toFixed(2)} T`;if(v>=1e9)return`Rp ${(v/1e9).toFixed(1)} M`;if(v>=1e6)return`Rp ${(v/1e6).toFixed(1)} jt`;return`Rp ${fmt(v)}`;};
+const bCls=r=>({'STRONG BUY':'b-sb','BUY':'b-b','HOLD':'b-np','WAIT':'b-n','AVOID':'b-h'}[r]||'b-n');
+const olMap={
+  'SANGAT MENJANJIKAN':{cls:'ol-sm',c:'var(--g)',icon:'🚀'},
+  'MENJANJIKAN':{cls:'ol-m',c:'var(--teal)',icon:'📈'},
+  'NETRAL':{cls:'ol-n',c:'var(--b)',icon:'➡️'},
+  'BERISIKO':{cls:'ol-b',c:'var(--y)',icon:'⚠️'},
+  'SANGAT BERISIKO':{cls:'ol-sb',c:'var(--r)',icon:'🚨'},
+};
+const vlMap={
+  'SANGAT MURAH':{c:'var(--g)',icon:'🟢'},
+  'MURAH':{c:'var(--g)',icon:'🟩'},
+  'WAJAR':{c:'var(--b)',icon:'🔵'},
+  'MAHAL':{c:'var(--y)',icon:'🟠'},
+  'SANGAT MAHAL':{c:'var(--r)',icon:'🔴'},
+};
+
+function startScan(){
+  if(es){es.close();es=null;}
+  RESULTS=[];
+  const max=document.getElementById('max-r').value;
+  document.getElementById('scan-btn').disabled=true;
+  document.getElementById('scan-btn').innerHTML='<span class="spin" style="border-top-color:#000"></span> Scanning...';
+  document.getElementById('progress-box').style.display='block';
+  document.getElementById('stats-bar').style.display='none';
+  document.getElementById('results-grid').innerHTML='<div class="empty-state"><div class="empty-icon">⏳</div><h3>Sedang menganalisis fundamental...</h3><p>Proses ini lebih lama karena mengambil data dari Yahoo Finance per emiten. Mohon tunggu.</p></div>';
+  document.getElementById('prog-bar').style.width='0%';
+  document.getElementById('prog-found').textContent='';
+
+  es=new EventSource(`/api/invest-suggestion?max=${max}`);
+  es.onmessage=e=>{
+    const d=JSON.parse(e.data);
+    if(d.type==='progress'){
+      const pct=(d.current/d.total*100).toFixed(1);
+      document.getElementById('prog-bar').style.width=pct+'%';
+      document.getElementById('prog-ct').textContent=`${d.current} / ${d.total}`;
+      document.getElementById('prog-tk').textContent='⟳ '+d.ticker+'...';
+    } else if(d.type==='result'){
+      RESULTS.push(d.data);
+      document.getElementById('prog-found').textContent=`🌱 ${RESULTS.length} emiten layak ditemukan...`;
+      renderResults();
+    } else if(d.type==='complete'){
+      es.close();es=null;
+      document.getElementById('progress-box').style.display='none';
+      document.getElementById('stats-bar').style.display='grid';
+      document.getElementById('st-total').textContent=d.total_tickers;
+      document.getElementById('st-found').textContent=RESULTS.length;
+      document.getElementById('st-sb').textContent=RESULTS.filter(r=>r.investment_rating==='STRONG BUY').length;
+      document.getElementById('st-prom').textContent=RESULTS.filter(r=>['SANGAT MENJANJIKAN','MENJANJIKAN'].includes(r.future_outlook)).length;
+      document.getElementById('scan-btn').disabled=false;
+      document.getElementById('scan-btn').innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Scan Ulang';
+      if(!RESULTS.length){
+        document.getElementById('results-grid').innerHTML='<div class="empty-state"><div class="empty-icon">😔</div><h3>Tidak ada emiten layak ditemukan</h3><p>Coba scan lebih banyak emiten.</p></div>';
+      }
+    } else if(d.type==='error'){
+      es.close();es=null;
+      document.getElementById('scan-btn').disabled=false;
+      document.getElementById('scan-btn').textContent='Cari Saham Terbaik';
+      document.getElementById('progress-box').style.display='none';
+      document.getElementById('results-grid').innerHTML=`<div class="empty-state"><h3>⚠️ Error</h3><p>${d.message}</p></div>`;
+    }
+  };
+  es.onerror=()=>{if(es){es.close();es=null;}document.getElementById('scan-btn').disabled=false;};
+}
+
+function renderResults(){
+  if(!RESULTS.length) return;
+  const sorted=[...RESULTS].sort((a,b)=>(b.investment_score+b.outlook_score)-(a.investment_score+a.outlook_score));
+  document.getElementById('results-grid').innerHTML=sorted.map((r,i)=>{
+    const ol=olMap[r.future_outlook]||olMap['NETRAL'];
+    const vl=vlMap[r.valuation_label]||{c:'var(--t2)',icon:'⚪'};
+    const rankCls=i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-other';
+    const mcap=r.market_cap>=1e12?`Rp ${(r.market_cap/1e12).toFixed(2)} T`:r.market_cap>=1e9?`Rp ${(r.market_cap/1e9).toFixed(1)} M`:'—';
+    const topSignal=r.signals&&r.signals.length?r.signals[0]:'';
+    return `<div class="inv-card" style="animation-delay:${Math.min(i*.05,.5)}s;cursor:pointer" onclick="openDetailModal('${r.ticker}')" title="Klik untuk detail ${r.ticker}">
+      <div class="rank-badge ${rankCls}">${i+1}</div>
+      <div class="card-top">
+        <div>
+          <div class="card-tk">${r.ticker}</div>
+          <div class="card-name">${r.company_name}</div>
+          <div class="card-sector">${r.sector}</div>
+        </div>
+        <div class="inv-score-box">
+          <div class="inv-score-num">${r.investment_score}</div>
+          <div class="inv-score-lbl">Inv. Score</div>
+          <div style="margin-top:4px"><span class="badge ${bCls(r.investment_rating)}">${r.investment_rating}</span></div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span style="font-size:11px;color:var(--t3)">Market Cap: <strong style="color:var(--t2)">${mcap}</strong></span>
+        <span style="font-size:11px;color:${vl.c}">${vl.icon} ${r.valuation_label||'—'}</span>
+      </div>
+      <div class="outlook-box ${ol.cls}">
+        <div class="outlook-label" style="color:${ol.c}">${ol.icon} Outlook Masa Depan: ${r.future_outlook}</div>
+        <div class="outlook-reason">${topSignal||'Analisis fundamental tersedia — buka detail untuk info lengkap'}</div>
+      </div>
+      <div class="metrics-grid">
+        <div class="cm"><div class="cm-lbl">ROE</div><div class="cm-val" style="color:${r.roe>=20?'var(--g)':r.roe>=10?'var(--b)':r.roe<0?'var(--r)':'var(--t2)'}">${r.roe?r.roe.toFixed(1)+'%':'—'}</div></div>
+        <div class="cm"><div class="cm-lbl">P/E</div><div class="cm-val" style="color:${r.pe_ratio>0&&r.pe_ratio<=10?'var(--g)':r.pe_ratio<=20?'var(--b)':r.pe_ratio>30?'var(--r)':'var(--t2)'}">${r.pe_ratio>0?r.pe_ratio.toFixed(1)+'×':'Rugi'}</div></div>
+        <div class="cm"><div class="cm-lbl">Dividen</div><div class="cm-val" style="color:${r.dividend_yield>=4?'var(--g)':r.dividend_yield>=2?'var(--b)':'var(--t3)'}">${r.dividend_yield?r.dividend_yield.toFixed(1)+'%':'—'}</div></div>
+        <div class="cm"><div class="cm-lbl">Rev. Growth</div><div class="cm-val" style="color:${r.revenue_growth>=15?'var(--g)':r.revenue_growth>=5?'var(--b)':r.revenue_growth<0?'var(--r)':'var(--t2)'}">${r.revenue_growth?(r.revenue_growth>=0?'+':'')+r.revenue_growth.toFixed(1)+'%':'—'}</div></div>
+        <div class="cm"><div class="cm-lbl">Debt/Eq.</div><div class="cm-val" style="color:${r.debt_to_equity<=50?'var(--g)':r.debt_to_equity<=100?'var(--b)':'var(--r)'}">${r.debt_to_equity?r.debt_to_equity.toFixed(0)+'%':'—'}</div></div>
+        <div class="cm"><div class="cm-lbl">FCF</div><div class="cm-val" style="font-size:10px;color:${r.free_cash_flow>0?'var(--g)':r.free_cash_flow<0?'var(--r)':'var(--t3)'}">${r.free_cash_flow>0?'✅ Positif':r.free_cash_flow<0?'⚠️ Negatif':'—'}</div></div>
+      </div>
+      ${r.total_assets>0?`<div style="background:var(--bg3);border-radius:var(--r6);padding:8px 10px;margin-bottom:8px">
+        <div style="font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Skala Perusahaan</div>
+        <div class="asset-row"><span class="asset-lbl">Total Aset</span><span class="asset-val">${fmtT(r.total_assets)}</span></div>
+        <div class="asset-row"><span class="asset-lbl">Total Ekuitas</span><span class="asset-val">${fmtT(r.total_equity)}</span></div>
+        ${r.employees>0?`<div class="asset-row"><span class="asset-lbl">Karyawan</span><span class="asset-val">${new Intl.NumberFormat('id-ID').format(r.employees)} orang</span></div>`:''}
+      </div>`:''}
+      ${r.fair_value_avg>0?`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-top:1px solid var(--border)">
+        <span style="font-size:10px;color:var(--t3)">Nilai Wajar: <strong style="color:var(--b)">Rp ${fmt(r.fair_value_avg)}</strong></span>
+        <span style="font-size:10px;color:${r.margin_of_safety>0?'var(--g)':'var(--r)'}">${r.margin_of_safety>0?'Diskon':'Premium'} ${Math.abs(r.margin_of_safety).toFixed(1)}%</span>
+      </div>`:''}
+    </div>`;
+  }).join('');
+}
+</script>
+{% include '_detail_modal.html' %}
+</body>
+</html>

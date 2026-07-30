@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARA Hunting — GUFRON Screener</title>
+<style>
+:root{
+  --bg0:#060d1a;--bg1:#09121f;--bg2:#0d1a2b;--bg3:#122035;--bg4:#172640;
+  --border:#1c2e42;--border2:#243d57;
+  --g:#00d97e;--g2:#009e5c;--g-a:rgba(0,217,126,.1);
+  --r:#ff3d5a;--r2:#c42a42;--r-a:rgba(255,61,90,.1);
+  --b:#38b6ff;--b2:#1a8fd1;--b-a:rgba(56,182,255,.1);
+  --y:#ffcc00;--y2:#c99f00;--y-a:rgba(255,204,0,.1);
+  --p:#c084fc;--o:#fb923c;
+  --t1:#e8f1fc;--t2:#7fa8c9;--t3:#3a566e;
+  --f-mono:'JetBrains Mono','Fira Code','Consolas',monospace;
+  --r6:6px;--r10:10px;--r16:16px;
+  --shadow:0 8px 32px rgba(0,0,0,.6);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{min-height:100%;background:var(--bg0);color:var(--t1);font-family:'Inter','Segoe UI',system-ui,sans-serif;font-size:13px}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* Header */
+header{
+  display:flex;align-items:center;gap:14px;padding:0 20px;height:56px;
+  background:var(--bg1);border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:50;
+}
+.logo{display:flex;align-items:center;gap:9px;font-weight:800;font-size:15px;text-decoration:none}
+.logo-icon{width:30px;height:30px;background:linear-gradient(135deg,#f59e0b,#ef4444);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.logo-text{background:linear-gradient(135deg,#f59e0b,#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.back-btn{
+  margin-left:auto;display:flex;align-items:center;gap:6px;padding:7px 14px;
+  background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r10);
+  color:var(--t2);font-size:12px;font-weight:600;cursor:pointer;text-decoration:none;
+  transition:.15s;
+}
+.back-btn:hover{border-color:var(--b);color:var(--b)}
+#clock{font-size:12px;color:var(--t3);font-family:var(--f-mono)}
+
+/* Main layout */
+.page{max-width:1400px;margin:0 auto;padding:20px 20px 40px}
+
+/* Top banner */
+.ara-banner{
+  background:linear-gradient(135deg,rgba(245,158,11,.12),rgba(239,68,68,.08));
+  border:1px solid rgba(245,158,11,.3);border-radius:var(--r16);
+  padding:24px 28px;margin-bottom:24px;
+  display:flex;align-items:flex-start;gap:20px;
+}
+.ara-banner-icon{font-size:48px;flex-shrink:0}
+.ara-banner-title{font-size:22px;font-weight:900;background:linear-gradient(135deg,#f59e0b,#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px}
+.ara-banner-sub{font-size:12px;color:var(--t3);line-height:1.7;max-width:680px}
+.ara-rules{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+.ara-rule{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.3px}
+.ara-rule.r1{background:rgba(0,217,126,.12);border:1px solid var(--g2);color:var(--g)}
+.ara-rule.r2{background:rgba(56,182,255,.12);border:1px solid var(--b2);color:var(--b)}
+.ara-rule.r3{background:rgba(255,204,0,.12);border:1px solid var(--y2);color:var(--y)}
+
+/* Controls */
+.controls{
+  background:var(--bg1);border:1px solid var(--border);border-radius:var(--r16);
+  padding:20px 24px;margin-bottom:20px;
+  display:flex;align-items:center;gap:20px;flex-wrap:wrap;
+}
+.ctrl-group{display:flex;flex-direction:column;gap:6px}
+.ctrl-label{font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.7px}
+.ctrl-val{font-size:28px;font-weight:800;color:var(--o);letter-spacing:-1px;line-height:1}
+input[type=range]{width:220px;accent-color:var(--o);height:4px;cursor:pointer}
+.scan-btn{
+  display:flex;align-items:center;gap:8px;padding:12px 24px;
+  background:linear-gradient(135deg,#f59e0b,#ef4444);
+  border:none;border-radius:var(--r10);color:#000;font-size:13px;font-weight:800;
+  cursor:pointer;transition:.2s;letter-spacing:.4px;
+  box-shadow:0 4px 14px rgba(245,158,11,.4);white-space:nowrap;
+}
+.scan-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(245,158,11,.55)}
+.scan-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.ctrl-hint{font-size:11px;color:var(--t3);line-height:1.6;border-left:2px solid var(--o);padding-left:10px;max-width:340px}
+
+/* Progress */
+#progress-box{display:none;background:var(--bg1);border:1px solid var(--border);border-radius:var(--r16);padding:20px 24px;margin-bottom:20px}
+.prog-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.prog-tk{font-size:14px;font-weight:700;color:var(--o);font-family:var(--f-mono)}
+.prog-ct{font-size:12px;color:var(--t3);font-family:var(--f-mono)}
+.prog-bar-wrap{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.prog-bar{height:100%;width:0%;background:linear-gradient(90deg,#f59e0b,#ef4444);border-radius:3px;transition:width .4s}
+.prog-found{font-size:12px;color:var(--g);margin-top:8px;min-height:18px}
+
+/* Stats */
+#stats-bar{display:none;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r10);padding:14px;text-align:center}
+.stat-val{font-size:26px;font-weight:800;font-family:var(--f-mono);line-height:1}
+.stat-lbl{font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-top:4px}
+
+/* Results grid */
+#results-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px}
+
+/* ARA card */
+.ara-card{
+  background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r16);
+  padding:18px;cursor:pointer;transition:.2s;position:relative;overflow:hidden;
+}
+.ara-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#f59e0b,#ef4444)}
+.ara-card:hover{border-color:rgba(245,158,11,.5);transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,.5)}
+
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+.card-tk{font-size:22px;font-weight:900;letter-spacing:.5px}
+.card-score-wrap{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.card-score{font-size:28px;font-weight:900;font-family:var(--f-mono);color:#f59e0b;line-height:1}
+.card-score small{font-size:10px;color:var(--t3);font-weight:400}
+
+.card-price{font-size:16px;font-weight:700;font-family:var(--f-mono);color:var(--t2);margin-bottom:4px}
+.card-chg{font-size:13px;font-weight:700;margin-bottom:12px}
+.up{color:var(--g)}.dn{color:var(--r)}
+
+/* ARA target */
+.ara-target{
+  background:linear-gradient(135deg,rgba(245,158,11,.1),rgba(239,68,68,.06));
+  border:1px solid rgba(245,158,11,.25);border-radius:var(--r10);
+  padding:12px 14px;margin-bottom:12px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.ara-target-lbl{font-size:10px;font-weight:700;color:rgba(245,158,11,.8);text-transform:uppercase;letter-spacing:.6px}
+.ara-target-val{font-size:18px;font-weight:800;font-family:var(--f-mono);color:#f59e0b}
+.ara-target-pct{font-size:11px;font-weight:700;color:#f59e0b;opacity:.8}
+
+/* Card metrics */
+.card-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.cm{background:var(--bg3);border-radius:var(--r6);padding:8px 10px;text-align:center}
+.cm-lbl{font-size:8px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.cm-val{font-size:14px;font-weight:800;font-family:var(--f-mono)}
+
+/* Pola badge */
+.pola-badge{display:inline-flex;align-items:center;padding:4px 10px;border-radius:20px;font-size:10px;font-weight:800;letter-spacing:.4px;margin-bottom:8px}
+.pb-bk{background:var(--g-a);color:var(--g);border:1px solid var(--g2)}
+.pb-mk{background:rgba(0,217,126,.12);color:#4dffaa;border:1px solid rgba(0,217,126,.3)}
+.pb-ak{background:var(--b-a);color:var(--b);border:1px solid var(--b2)}
+.pb-di{background:var(--r-a);color:var(--r);border:1px solid var(--r2)}
+
+/* Signal preview */
+.card-signal{font-size:11px;color:var(--t3);line-height:1.5;border-top:1px solid var(--border);padding-top:10px;margin-top:4px}
+
+/* Breakout status & false-breakout warning badges */
+.bk-badge{display:inline-flex;align-items:center;padding:4px 10px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.3px;margin-bottom:8px;width:100%;justify-content:center}
+.bk-ok{background:rgba(0,217,126,.1);color:var(--g);border:1px solid var(--g2)}
+.bk-risk{background:rgba(255,61,90,.12);color:var(--r);border:1px solid var(--r2)}
+.bk-ready{background:rgba(255,204,0,.1);color:var(--y);border:1px solid var(--y2)}
+.bk-approach{background:rgba(56,182,255,.1);color:var(--b);border:1px solid var(--b2)}
+
+/* Badges */
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:800;letter-spacing:.4px;border:1px solid}
+.b-sb{color:var(--g);border-color:var(--g2);background:var(--g-a)}
+.b-b{color:var(--g);border-color:rgba(0,158,92,.5);background:rgba(0,217,126,.06)}
+.b-np{color:var(--b);border-color:var(--b2);background:var(--b-a)}
+.b-n{color:var(--t2);border-color:var(--border2);background:transparent}
+.b-nm{color:var(--y);border-color:var(--y2);background:var(--y-a)}
+.b-h{color:var(--r);border-color:var(--r2);background:var(--r-a)}
+
+/* Empty / loading */
+.empty-state{
+  grid-column:1/-1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:14px;padding:60px 20px;color:var(--t3);text-align:center;
+}
+.empty-state svg{width:60px;height:60px;opacity:.15}
+.empty-state h3{font-size:16px;color:var(--t2);margin-top:4px}
+.empty-state p{font-size:12px;line-height:1.7;max-width:340px}
+.empty-icon{font-size:56px;opacity:.3;margin-bottom:4px}
+
+/* Rank badge on card */
+.rank-badge{
+  position:absolute;top:14px;right:14px;
+  width:32px;height:32px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:900;font-family:var(--f-mono);
+}
+.rank-1{background:linear-gradient(135deg,#ffd700,#f59e0b);color:#000}
+.rank-2{background:linear-gradient(135deg,#c0c0c0,#9ca3af);color:#000}
+.rank-3{background:linear-gradient(135deg,#cd7f32,#92400e);color:#fff}
+.rank-other{background:var(--bg3);color:var(--t2);border:1px solid var(--border2)}
+
+/* ── ARA Validity ── */
+.validity-block{
+  border-radius:var(--r10);padding:10px 14px;margin-bottom:12px;
+}
+.vld-sv{background:rgba(0,217,126,.08);border:1px solid var(--g2)}
+.vld-v {background:rgba(56,182,255,.08);border:1px solid var(--b2)}
+.vld-r {background:rgba(255,204,0,.08);border:1px solid var(--y2)}
+.vld-tv{background:rgba(255,61,90,.08);border:1px solid var(--r2)}
+
+.vld-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.vld-label{font-size:11px;font-weight:900;letter-spacing:.5px}
+.vld-sv .vld-label{color:var(--g)}
+.vld-v  .vld-label{color:var(--b)}
+.vld-r  .vld-label{color:var(--y)}
+.vld-tv .vld-label{color:var(--r)}
+.vld-score{font-size:20px;font-weight:900;font-family:var(--f-mono);line-height:1}
+.vld-sv .vld-score{color:var(--g)}
+.vld-v  .vld-score{color:var(--b)}
+.vld-r  .vld-score{color:var(--y)}
+.vld-tv .vld-score{color:var(--r)}
+
+.vld-bar-wrap{height:5px;background:var(--bg3);border-radius:3px;overflow:hidden;margin-bottom:7px}
+.vld-bar{height:100%;border-radius:3px}
+.vld-sv .vld-bar{background:var(--g)}
+.vld-v  .vld-bar{background:var(--b)}
+.vld-r  .vld-bar{background:var(--y)}
+.vld-tv .vld-bar{background:var(--r)}
+
+.vld-reason{font-size:10px;color:var(--t2);line-height:1.5;margin-bottom:2px}
+.vld-risk  {font-size:10px;color:var(--r);line-height:1.5;margin-bottom:2px}
+.vld-reason::before{content:"✓ "}
+.vld-risk::before  {content:"⚠ "}
+
+/* PRE-ARA probability badge */
+.pre-ara-badge{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 12px;border-radius:var(--r10);margin-bottom:8px;
+  background:linear-gradient(135deg,rgba(192,132,252,.12),rgba(251,146,60,.08));
+  border:1px solid rgba(192,132,252,.35);
+}
+.pre-ara-badge.pa-partial{
+  background:rgba(192,132,252,.07);border-color:rgba(192,132,252,.2);
+}
+.pa-label{font-size:10px;font-weight:800;color:var(--p);letter-spacing:.4px}
+.pa-prob{font-size:18px;font-weight:900;font-family:var(--f-mono);color:var(--p);line-height:1}
+.pa-criteria{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+.pa-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.pa-dot.ok{background:var(--g)}.pa-dot.no{background:var(--border2)}
+
+/* Spinner */
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{animation:spin .75s linear infinite;display:inline-block;border:2px solid transparent;border-top-color:currentColor;border-radius:50%;width:14px;height:14px;vertical-align:middle}
+
+/* Responsive */
+@media(max-width:640px){
+  #stats-bar{grid-template-columns:repeat(2,1fr)}
+  .controls{flex-direction:column;align-items:flex-start}
+  .ara-banner{flex-direction:column;gap:12px}
+}
+
+@keyframes cardIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.ara-card{animation:cardIn .25s ease both}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🔥</div>
+    <span class="logo-text">ARA Hunting</span>
+  </div>
+  <span style="font-size:11px;color:var(--t3);background:var(--bg3);border:1px solid var(--border);padding:3px 10px;border-radius:20px">GUFRON Screener</span>
+  <span id="clock" style="margin-left:10px"></span>
+  <a href="/" class="back-btn">← Kembali ke Screener</a>
+</header>
+
+<div class="page">
+
+  <!-- Banner -->
+  <div class="ara-banner">
+    <div class="ara-banner-icon">🚀</div>
+    <div>
+      <div class="ara-banner-title">ARA Hunting — Auto Rejection Atas</div>
+      <div class="ara-banner-sub">
+        Scan otomatis ratusan emiten IDX untuk menemukan kandidat yang berpotensi menyentuh <strong>batas kenaikan maksimal</strong> (ARA) dalam 1–3 hari ke depan. Hasil diurutkan berdasarkan skor potensi ARA yang mempertimbangkan volume, momentum, pola bandar, dan proyeksi teknikal.
+      </div>
+      <div class="ara-rules">
+        <span class="ara-rule r1">💚 Harga &lt; Rp200 → ARA +35%</span>
+        <span class="ara-rule r2">💙 Harga Rp200–5.000 → ARA +25%</span>
+        <span class="ara-rule r3">💛 Harga &gt; Rp5.000 → ARA +20%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <div class="ctrl-group">
+      <div class="ctrl-label">Jumlah Emiten</div>
+      <div class="ctrl-val" id="max-v">200</div>
+      <input type="range" id="max-r" min="50" max="500" step="50" value="200"
+        oninput="document.getElementById('max-v').textContent=this.value">
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--t3);margin-top:4px;width:220px">
+        <span>50</span><span>250 (~6 mnt)</span><span>500</span>
+      </div>
+    </div>
+    <button class="scan-btn" id="scan-btn" onclick="startScan()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      Mulai Scan ARA
+    </button>
+    <div class="ctrl-hint">
+      ⏰ Scan terbaik dijalankan <strong>setelah 16:30 WIB</strong> (data closing).<br>
+      Kandidat ARA = emiten dengan skor ≥ 8 dari 25 poin.<br>
+      ⚠️ Bukan rekomendasi beli — gunakan sebagai referensi analisis.
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div id="progress-box">
+    <div class="prog-hd">
+      <span class="prog-tk" id="prog-tk">Mempersiapkan...</span>
+      <span class="prog-ct" id="prog-ct">0 / 0</span>
+    </div>
+    <div class="prog-bar-wrap"><div class="prog-bar" id="prog-bar"></div></div>
+    <div class="prog-found" id="prog-found"></div>
+  </div>
+
+  <!-- Stats -->
+  <div id="stats-bar" style="display:none">
+    <div class="stat-card">
+      <div class="stat-val" id="st-total" style="color:var(--b)">0</div>
+      <div class="stat-lbl">Emiten Dianalisis</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="st-found" style="color:#f59e0b">0</div>
+      <div class="stat-lbl">Kandidat ARA</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="st-hot" style="color:var(--r)">0</div>
+      <div class="stat-lbl">Skor Tinggi (≥15)</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="st-breakout" style="color:var(--g)">0</div>
+      <div class="stat-lbl">Pola Breakout</div>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div id="results-grid">
+    <div class="empty-state">
+      <div class="empty-icon">🔍</div>
+      <h3>Belum ada hasil scan</h3>
+      <p>Klik <strong>Mulai Scan ARA</strong> untuk mencari emiten berpotensi ARA. Proses berjalan di background, Anda bisa memantau hasilnya secara real-time.</p>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<script>
+let RESULTS = [], totalAnalyzed = 0, es = null;
+
+// Clock
+function tick(){
+  const n=new Date(), wib=new Date(n.getTime()+(7*60-n.getTimezoneOffset())*60000);
+  document.getElementById('clock').textContent=wib.toISOString().replace('T',' ').slice(0,19)+' WIB';
+}
+setInterval(tick,1000);tick();
+
+const fmt=n=>n==null?'—':new Intl.NumberFormat('id-ID').format(Math.round(n));
+const bCls=r=>({'STRONG BUY':'b-sb','BUY':'b-b','NETRAL+':'b-np','NETRAL':'b-n','NETRAL-':'b-nm','HINDARI':'b-h'}[r]||'b-n');
+const polaCls=p=>({'BREAKOUT':'pb-bk','MARKING UP':'pb-mk','AKUMULASI':'pb-ak','DISTRIBUSI':'pb-di'}[p]||'');
+
+function startScan(){
+  if(es){es.close();es=null;}
+  RESULTS=[];totalAnalyzed=0;
+  const max=document.getElementById('max-r').value;
+  document.getElementById('scan-btn').disabled=true;
+  document.getElementById('scan-btn').innerHTML='<span class="spin" style="border-top-color:#000"></span> Scanning...';
+  document.getElementById('progress-box').style.display='block';
+  document.getElementById('stats-bar').style.display='none';
+  document.getElementById('results-grid').innerHTML='<div class="empty-state"><div class="empty-icon">⏳</div><h3>Sedang scanning...</h3><p>Menemukan kandidat ARA secara real-time. Hasil akan muncul segera saat ditemukan.</p></div>';
+  document.getElementById('prog-bar').style.width='0%';
+  document.getElementById('prog-found').textContent='';
+
+  es=new EventSource(`/api/ara-hunting?max=${max}`);
+  es.onmessage=e=>{
+    const d=JSON.parse(e.data);
+    if(d.type==='phase'){
+      if(d.phase==='download'){document.getElementById('prog-tk').textContent=`⬇ Mengunduh ${d.total} saham secara paralel...`;}
+      else if(d.phase==='analyze'){document.getElementById('prog-tk').textContent=`🔍 Menganalisis ${d.downloaded} saham...`;}
+    } else if(d.type==='progress'){
+      const pct=(d.current/d.total*100).toFixed(1);
+      document.getElementById('prog-bar').style.width=pct+'%';
+      document.getElementById('prog-ct').textContent=`${d.current} / ${d.total}`;
+      document.getElementById('prog-tk').textContent='⟳ '+d.ticker+'...';
+      totalAnalyzed=d.current;
+    } else if(d.type==='result'){
+      RESULTS.push(d.data);
+      document.getElementById('prog-found').textContent=`🔥 ${RESULTS.length} kandidat ARA ditemukan...`;
+      renderResults();
+    } else if(d.type==='complete'){
+      es.close();es=null;
+      document.getElementById('progress-box').style.display='none';
+      document.getElementById('stats-bar').style.display='grid';
+      document.getElementById('st-total').textContent=d.total_tickers;
+      document.getElementById('st-found').textContent=RESULTS.length;
+      document.getElementById('st-hot').textContent=RESULTS.filter(r=>r.ara_score>=15).length;
+      document.getElementById('st-breakout').textContent=RESULTS.filter(r=>r.bandar.pola==='BREAKOUT').length;
+      document.getElementById('scan-btn').disabled=false;
+      document.getElementById('scan-btn').innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Scan Ulang';
+      if(!RESULTS.length){
+        document.getElementById('results-grid').innerHTML='<div class="empty-state"><div class="empty-icon">😔</div><h3>Tidak ada kandidat ARA ditemukan</h3><p>Coba scan lebih banyak emiten atau jalankan setelah jam tutup bursa (16:30 WIB) untuk data yang lebih akurat.</p></div>';
+      }
+    } else if(d.type==='error'){
+      es.close();es=null;
+      document.getElementById('scan-btn').disabled=false;
+      document.getElementById('scan-btn').textContent='Mulai Scan ARA';
+      document.getElementById('progress-box').style.display='none';
+      document.getElementById('results-grid').innerHTML=`<div class="empty-state"><h3>⚠️ Error</h3><p>${d.message}</p></div>`;
+    }
+  };
+  es.onerror=()=>{
+    if(es){es.close();es=null;}
+    document.getElementById('scan-btn').disabled=false;
+  };
+}
+
+function renderResults(){
+  if(!RESULTS.length) return;
+  const sorted=[...RESULTS].sort((a,b)=>b.ara_score-a.ara_score);
+  document.getElementById('results-grid').innerHTML=sorted.map((r,i)=>{
+    const up=r.change_pct>=0;
+    const pola=r.bandar.pola;
+    const polac=polaCls(pola);
+    const rankCls=i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-other';
+    const fc3pct=((r.fc.forecast_3d-r.last_price)/r.last_price*100).toFixed(1);
+    const signal=r.signals?.[0]||r.bandar?.signals?.[0]||'';
+    const hasOn=r.strat?.overnight_feasible, hasId=r.strat?.intraday_feasible;
+    const araLimit=r.ara_limit_pct||25;
+    const araTarget=r.ara_target||Math.round(r.last_price*(1+araLimit/100));
+
+    // Breakout analysis
+    const ba=r.breakout_analysis||{};
+    const bkStatus=ba.breakout_status||'NONE';
+    const resTests=ba.resistance_tests||0;
+    const volOk=ba.vol_confirmation||false;
+    const fbWarn=ba.warning||'';
+    let bkBadge='';
+    if(bkStatus==='CONFIRMED'&&volOk){
+      bkBadge='<span class="bk-badge bk-ok">✅ Breakout Terkonfirmasi + Volume</span>';
+    } else if(bkStatus==='FALSE_RISK'){
+      bkBadge=`<span class="bk-badge bk-risk">${fbWarn||'⚠️ Risiko False Breakout'}</span>`;
+    } else if(bkStatus==='APPROACHING'){
+      bkBadge=resTests>=2
+        ?`<span class="bk-badge bk-ready">🎯 ${resTests}× Tes Resistance — Siap Breakout</span>`
+        :'<span class="bk-badge bk-approach">📍 Mendekati Resistance</span>';
+    } else if(fbWarn){
+      bkBadge=`<span class="bk-badge bk-risk">${fbWarn}</span>`;
+    } else if(resTests>=3){
+      bkBadge=`<span class="bk-badge bk-ready">🎯 ${resTests}× Tes Resistance</span>`;
+    }
+
+    // ARA Validity Score
+    const vld      = r.validity || {};
+    const vScore   = vld.score  || 0;
+    const vLabel   = vld.label  || '—';
+    const vReasons = vld.reasons || [];
+    const vRisks   = vld.risks   || [];
+    const vCls     = {'SANGAT VALID':'vld-sv','VALID':'vld-v','RAGU-RAGU':'vld-r','TIDAK VALID':'vld-tv'}[vLabel] || 'vld-r';
+    const vIcon    = {'SANGAT VALID':'🟢','VALID':'🔵','RAGU-RAGU':'🟡','TIDAK VALID':'🔴'}[vLabel] || '❓';
+    const vldHtml  = `<div class="validity-block ${vCls}">
+      <div class="vld-head">
+        <span class="vld-label">${vIcon} ${vLabel} — Risiko Di-Guyur</span>
+        <span class="vld-score">${vScore}<span style="font-size:11px;font-weight:400;color:var(--t3)">/100</span></span>
+      </div>
+      <div class="vld-bar-wrap"><div class="vld-bar" style="width:${vScore}%"></div></div>
+      ${vReasons.map(s=>`<div class="vld-reason">${s}</div>`).join('')}
+      ${vRisks.map(s=>`<div class="vld-risk">${s}</div>`).join('')}
+    </div>`;
+
+    // PRE-ARA probability
+    const pa = r.pre_ara || {};
+    const paProb = pa.probability || 0;
+    const paMet  = pa.criteria_met || 0;
+    const CRITERIA_KEYS = ['three_candle_up','vol2d_ok','strong_close','body_ok','range_ok','value_ok','no_exhaustion','break_high20'];
+    const CRITERIA_LABELS = ['3C↑','Vol2D','SC','Body','Jarak','Value','<20%','BH20'];
+    let preAraBadge = '';
+    if(pa.is_candidate){
+      const dots = CRITERIA_KEYS.map((k,i)=>`<span class="pa-dot ok" title="${CRITERIA_LABELS[i]} ✓"></span>`).join('');
+      preAraBadge = `<div class="pre-ara-badge">
+        <div><div class="pa-label">🎯 PRE-ARA KANDIDAT</div><div class="pa-criteria">${dots}</div></div>
+        <div style="text-align:right"><div class="pa-prob">${paProb.toFixed(0)}%</div><div style="font-size:9px;color:var(--t3)">probabilitas</div></div>
+      </div>`;
+    } else if(paProb >= 55){
+      const dots = CRITERIA_KEYS.map((k,i)=>`<span class="pa-dot ${pa[k]?'ok':'no'}" title="${CRITERIA_LABELS[i]} ${pa[k]?'✓':'✗'}"></span>`).join('');
+      preAraBadge = `<div class="pre-ara-badge pa-partial">
+        <div><div class="pa-label">⚡ PRE-ARA ${paMet}/8 kriteria</div><div class="pa-criteria">${dots}</div></div>
+        <div style="text-align:right"><div class="pa-prob" style="font-size:15px">${paProb.toFixed(0)}%</div></div>
+      </div>`;
+    }
+
+    return `<div class="ara-card" style="animation-delay:${Math.min(i*.05,.5)}s;cursor:pointer" onclick="openDetailModal('${r.ticker}')" title="Klik untuk detail ${r.ticker}">
+      <div class="rank-badge ${rankCls}">${i+1}</div>
+      <div class="card-top">
+        <div>
+          <div class="card-tk">${r.ticker}</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap">
+            <span class="badge ${bCls(r.recommendation)}">${r.recommendation}</span>
+            ${hasOn?'<span style="background:rgba(0,217,126,.1);border:1px solid var(--g2);color:var(--g);padding:2px 7px;border-radius:10px;font-size:9px;font-weight:700">ON✓</span>':''}
+            ${hasId?'<span style="background:rgba(56,182,255,.1);border:1px solid var(--b2);color:var(--b);padding:2px 7px;border-radius:10px;font-size:9px;font-weight:700">ID✓</span>':''}
+          </div>
+        </div>
+        <div class="card-score-wrap">
+          <div class="card-score">${r.ara_score}<small> /25</small></div>
+          <div style="font-size:9px;color:var(--t3)">ARA Score</div>
+        </div>
+      </div>
+      <div class="card-price">Rp ${fmt(r.last_price)}</div>
+      <div class="card-chg ${up?'up':'dn'}">${up?'+':''}${r.change_pct.toFixed(2)}% hari ini</div>
+      ${vldHtml}
+      <div class="ara-target">
+        <div>
+          <div class="ara-target-lbl">Target ARA (+${araLimit}%)</div>
+          <div class="ara-target-val">Rp ${fmt(araTarget)}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="ara-target-lbl">Potensi</div>
+          <div class="ara-target-pct">+${araLimit}%</div>
+        </div>
+      </div>
+      ${polac?`<span class="pola-badge ${polac}">${pola}</span>`:''}
+      ${preAraBadge}
+      ${bkBadge}
+      <div class="card-metrics">
+        <div class="cm">
+          <div class="cm-lbl">Volume</div>
+          <div class="cm-val" style="color:${r.volume_ratio>=3?'var(--g)':r.volume_ratio>=1.5?'var(--b)':'var(--t2)'}">${r.volume_ratio.toFixed(1)}×</div>
+        </div>
+        <div class="cm">
+          <div class="cm-lbl">RSI</div>
+          <div class="cm-val" style="color:${r.rsi<30?'var(--g)':r.rsi>70?'var(--r)':'var(--t2)'}">${r.rsi.toFixed(0)}</div>
+        </div>
+        <div class="cm">
+          <div class="cm-lbl">Forecast 3H</div>
+          <div class="cm-val" style="color:${parseFloat(fc3pct)>=0?'var(--g)':'var(--r)'}">${parseFloat(fc3pct)>=0?'+':''}${fc3pct}%</div>
+        </div>
+        <div class="cm">
+          <div class="cm-lbl">MFI</div>
+          <div class="cm-val" style="color:${r.bandar.mfi>=60?'var(--g)':r.bandar.mfi<30?'var(--r)':'var(--t2)'}">${r.bandar.mfi.toFixed(0)}</div>
+        </div>
+        <div class="cm">
+          <div class="cm-lbl">Res. Test</div>
+          <div class="cm-val" style="color:${resTests>=2?'var(--y)':resTests>=1?'var(--b)':'var(--t3)'}">${resTests}×</div>
+        </div>
+        <div class="cm">
+          <div class="cm-lbl">ATR %</div>
+          <div class="cm-val" style="color:${r.fc.atr_pct>=3?'var(--g)':r.fc.atr_pct>=1.5?'var(--b)':'var(--t2)'}">${r.fc.atr_pct.toFixed(1)}%</div>
+        </div>
+        <div class="cm">
+          <div class="cm-lbl">Nilai Tx</div>
+          <div class="cm-val" style="color:${(pa.value_transaksi_m||0)>=100?'var(--g)':(pa.value_transaksi_m||0)>=20?'var(--b)':'var(--t3)'}">${pa.value_transaksi_m!=null?pa.value_transaksi_m.toFixed(0)+'M':'—'}</div>
+        </div>
+        <div class="cm">
+          <div class="cm-lbl">Sisa ARA</div>
+          <div class="cm-val" style="color:${(pa.pct_to_ara||0)<=5?'var(--g)':(pa.pct_to_ara||0)<=12?'var(--b)':'var(--t3)'}">${pa.pct_to_ara!=null?pa.pct_to_ara.toFixed(1)+'%':'—'}</div>
+        </div>
+      </div>
+      ${signal?`<div class="card-signal">💡 ${signal}</div>`:''}
+    </div>`;
+  }).join('');
+}
+</script>
+{% include '_detail_modal.html' %}
+</body>
+</html>
