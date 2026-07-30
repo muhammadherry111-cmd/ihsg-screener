@@ -3,6 +3,8 @@
 IHSG Technical Screener
 Screening emiten IHSG berdasarkan analisis teknikal untuk daily trade.
 """
+from __future__ import annotations
+
 import argparse
 import sys
 from rich.console import Console
