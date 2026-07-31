@@ -1,0 +1,15 @@
+[Unit]
+Description=IHSG Screener - GitHub deploy webhook listener
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/var/www/ihsg-screener
+Environment=GITHUB_WEBHOOK_SECRET=GANTI_DENGAN_SECRET_ACAK_ANDA
+ExecStart=/usr/bin/python3 /var/www/ihsg-screener/deploy/webhook.py
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
