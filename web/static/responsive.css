@@ -1,0 +1,101 @@
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE & SMOOTH SCROLL — dipakai bersama di semua halaman
+   Tidak mengubah warna/branding, hanya perilaku layout & scroll.
+   ═══════════════════════════════════════════════════════════════ */
+
+html{
+  scroll-behavior:smooth;
+}
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important}
+}
+
+/* Sentuhan mulus untuk semua elemen yang bisa di-scroll (tabel, drawer, dsb) */
+.tbl-wrap,.sb-body,#content,.inst-table-wrap,body{
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+}
+
+/* Hilangkan efek highlight biru saat tap di HP, jaga interaksi tetap terasa halus */
+a,button,.btn,.filt-btn,.sb-tab,.pc,.chip,.tools-btn,.qs-btn,.back-btn{
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+}
+
+/* Header di halaman tools (ARA/Bandarmology/Crypto/Dividen/Invest) — jaga tetap rapi di HP kecil */
+@media (max-width:640px){
+  header{flex-wrap:wrap;row-gap:8px;height:auto !important;padding:10px 14px !important}
+  header .back-btn{order:5;margin-left:0;width:100%;text-align:center}
+  header #clock{margin-left:auto}
+}
+@media (max-width:420px){
+  #stats-bar,.stats-row{grid-template-columns:repeat(2,1fr) !important}
+  .card-metrics,.metrics-grid{grid-template-columns:repeat(2,1fr) !important}
+  .market-grid{grid-template-columns:repeat(2,1fr) !important}
+  #results-grid,.cards-grid{grid-template-columns:1fr !important}
+}
+
+/* Safe-area untuk HP dengan notch/gesture bar */
+body{
+  padding-bottom:env(safe-area-inset-bottom);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DESIGN SYSTEM — clean minimal, satu warna aksen, tanpa gradient
+   dekoratif/emoji-as-icon/glow-shadow. Berlaku ke semua halaman
+   lewat override variabel :root (nama variabel sama di semua file).
+   Hijau/merah/kuning DIPERTAHANKAN karena itu warna fungsional data
+   (naik/turun/peringatan), bukan gaya dekoratif.
+   ═══════════════════════════════════════════════════════════════ */
+:root{
+  --bg0:#f6f7f9;--bg1:#ffffff;--bg2:#ffffff;--bg3:#f1f3f6;--bg4:#e7eaef;
+  --border:#e6e8ec;--border2:#d7dbe2;
+  --t1:#12161f;--t2:#5b6472;--t3:#94a0af;
+  --b:#4aa816;--b2:#3d8a12;--b-a:rgba(74,168,22,.12);
+  --g:#1a9e63;--g2:#157f4f;--g-a:rgba(26,158,99,.1);
+  --r:#d6394f;--r2:#b32d40;--r-a:rgba(214,57,79,.1);
+  --y:#c07f00;--y2:#9c6700;--y-a:rgba(192,127,0,.12);
+  --p:#6d5bd0;--p2:#5847b3;--o:#c2620f;--o2:#a85009;--cy:#0f7f96;
+  --gold:#9c6700;--gold2:#7d5300;--teal:#0f7f70;--teal2:#0c655a;
+  --shadow:0 2px 10px rgba(15,23,42,.08);
+}
+body{background:var(--bg0);color:var(--t1)}
+::-webkit-scrollbar-thumb{background:var(--border2) !important}
+
+/* Hapus gradient dekoratif pada elemen chrome (logo, tombol utama, banner, progress bar) */
+.logo-icon{background:var(--b) !important;color:#fff !important;font-weight:800 !important}
+.logo-icon svg{stroke:#fff !important}
+.logo-icon:has(img){background:none !important}
+.logo-icon img{width:100%;height:100%;object-fit:contain;border-radius:inherit}
+.logo-text{background:none !important;-webkit-text-fill-color:var(--t1) !important;color:var(--t1) !important}
+.banner-title,.ara-banner-title{background:none !important;-webkit-text-fill-color:var(--t1) !important;color:var(--t1) !important}
+.btn-primary,.gen-btn,.tools-btn,.scan-btn{
+  background:var(--b) !important;color:#fff !important;
+  box-shadow:none !important;
+}
+.btn-primary:hover,.gen-btn:hover,.tools-btn:hover,.scan-btn:hover{
+  background:var(--b2) !important;transform:none !important;box-shadow:none !important;
+}
+.prog-bar,.prog-bar-fill{background:var(--b) !important}
+.rank-1{background:#c99a2e !important;color:#000 !important}
+.rank-2{background:#9aa3ad !important;color:#000 !important}
+.rank-3{background:#b06a3a !important;color:#fff !important}
+.banner,.ara-banner,#ara-banner,.accum-box{
+  background:var(--bg3) !important;border-color:var(--border2) !important;
+}
+
+/* Kartu & elemen interaktif: hilangkan efek "melayang" + glow, ganti border tipis flat */
+.pc:hover,.bm-card:hover,.ara-card:hover,.inv-card:hover,.mcard:hover,.month-card:hover,.sc:hover{
+  transform:none !important;box-shadow:none !important;border-color:var(--border2) !important;
+}
+.btn-primary:active,.gen-btn:active,.tools-btn:active,.scan-btn:active{transform:none !important}
+
+/* Header di halaman-halaman tools: badge datar, tanpa efek neon */
+header .back-btn,.delay-tag{box-shadow:none !important}
+
+/* Overlay loading: transparan seperti modal (20%), bukan gelap penuh menutupi halaman */
+#overlay{background:rgba(15,23,32,.2) !important;backdrop-filter:blur(2px) !important}
+.ov-logo{background:none !important;-webkit-text-fill-color:var(--t1) !important;color:var(--t1) !important}
+.ov-tk{color:var(--b) !important}
+.ov-bar{background:var(--b) !important}

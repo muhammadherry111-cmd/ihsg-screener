@@ -330,6 +330,7 @@ def fetch_stock_data(ticker: str, period_days: int = 90) -> pd.DataFrame | None:
         if df.empty or len(df) < 20:
             return None
         df.columns = [c[0] if isinstance(c, tuple) else c for c in df.columns]
+        df = df.loc[:, ~df.columns.duplicated()]  # jaga-jaga kolom ganda dari yfinance
         df = df.rename(columns={
             "Open": "open", "High": "high", "Low": "low",
             "Close": "close", "Volume": "volume"

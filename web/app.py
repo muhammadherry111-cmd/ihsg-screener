@@ -12,6 +12,18 @@ from src.analyzer import analyze
 app = Flask(__name__)
 
 
+def _last_scalar(series):
+    """Ambil elemen terakhir sebuah kolom sebagai float skalar.
+    Kadang data dari yfinance untuk ticker tertentu punya kolom terduplikasi
+    sehingga df['volume'] bisa jadi DataFrame, bukan Series — ambil kolom
+    pertama agar tetap dapat skalar, bukan error 'cannot convert series to float'.
+    """
+    v = series.iloc[-1]
+    if hasattr(v, 'iloc'):
+        v = v.iloc[0]
+    return float(v)
+
+
 def _f(v, decimals=2, fallback=0.0):
     """Bulatkan float dan ganti NaN/Inf dengan fallback agar JSON valid."""
     try:
@@ -182,15 +194,18 @@ def screen_stream():
             yield f"data: {json.dumps({'type':'phase','phase':'analyze','downloaded':len(downloaded),'total':total})}\n\n"
             results = []
             for i, (ticker, df) in enumerate(downloaded.items()):
-                if float(df['volume'].iloc[-1]) < min_volume:
+                try:
+                    if _last_scalar(df['volume']) < min_volume:
+                        continue
+                    yield f"data: {json.dumps({'type':'progress','current':i+1,'total':len(downloaded),'ticker':ticker})}\n\n"
+                    sig = analyze(ticker, df)
+                    if sig is None:
+                        continue
+                    d = sig_to_dict(sig)
+                    results.append(d)
+                    yield f"data: {json.dumps({'type':'result','data':d})}\n\n"
+                except Exception:
                     continue
-                yield f"data: {json.dumps({'type':'progress','current':i+1,'total':len(downloaded),'ticker':ticker})}\n\n"
-                sig = analyze(ticker, df)
-                if sig is None:
-                    continue
-                d = sig_to_dict(sig)
-                results.append(d)
-                yield f"data: {json.dumps({'type':'result','data':d})}\n\n"
             results.sort(key=lambda x: x['total_score'], reverse=True)
             yield f"data: {json.dumps({'type':'complete','total_tickers':total,'analyzed':len(results)})}\n\n"
         except Exception as e:
@@ -1025,27 +1040,30 @@ def ara_hunting():
             yield f"data: {json.dumps({'type':'phase','phase':'analyze','downloaded':len(downloaded),'total':total})}\n\n"
             candidates = []
             for i, (ticker, df) in enumerate(downloaded.items()):
-                if float(df['volume'].iloc[-1]) < min_volume:
+                try:
+                    if _last_scalar(df['volume']) < min_volume:
+                        continue
+                    yield f"data: {json.dumps({'type':'progress','current':i+1,'total':len(downloaded),'ticker':ticker})}\n\n"
+                    sig = analyze(ticker, df)
+                    if sig is None: continue
+                    d = sig_to_dict(sig)
+                    score = ara_score(d, df)
+                    pre_ara  = pre_ara_screen(d, df)
+                    validity = ara_validity(d, df)
+                    d['pre_ara']  = pre_ara
+                    d['validity'] = validity
+                    if pre_ara['is_candidate']:
+                        score += 3
+                    elif pre_ara['criteria_met'] >= 6:
+                        score += 1
+                    d['ara_score'] = score
+                    d['ara_limit_pct'] = ara_limit_pct(d['last_price'])
+                    d['ara_target'] = round(d['last_price'] * (1 + d['ara_limit_pct'] / 100))
+                    if score >= 10 or pre_ara['is_candidate']:
+                        candidates.append(d)
+                        yield f"data: {json.dumps({'type':'result','data':d})}\n\n"
+                except Exception:
                     continue
-                yield f"data: {json.dumps({'type':'progress','current':i+1,'total':len(downloaded),'ticker':ticker})}\n\n"
-                sig = analyze(ticker, df)
-                if sig is None: continue
-                d = sig_to_dict(sig)
-                score = ara_score(d, df)
-                pre_ara  = pre_ara_screen(d, df)
-                validity = ara_validity(d, df)
-                d['pre_ara']  = pre_ara
-                d['validity'] = validity
-                if pre_ara['is_candidate']:
-                    score += 3
-                elif pre_ara['criteria_met'] >= 6:
-                    score += 1
-                d['ara_score'] = score
-                d['ara_limit_pct'] = ara_limit_pct(d['last_price'])
-                d['ara_target'] = round(d['last_price'] * (1 + d['ara_limit_pct'] / 100))
-                if score >= 10 or pre_ara['is_candidate']:
-                    candidates.append(d)
-                    yield f"data: {json.dumps({'type':'result','data':d})}\n\n"
             candidates.sort(key=lambda x: x['ara_score'], reverse=True)
             yield f"data: {json.dumps({'type':'complete','total_tickers':total,'found':len(candidates)})}\n\n"
         except Exception as e:

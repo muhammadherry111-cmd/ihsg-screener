@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GUFRON Screener</title>
+<title>IHSG Screener</title>
+<link rel="icon" type="image/png" href="/static/logo.png">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 /* ═══════════════ VARIABLES ═══════════════ */
@@ -22,13 +23,62 @@
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;background:var(--bg0);color:var(--t1);font-family:'Inter','Segoe UI',system-ui,sans-serif;font-size:13px;overflow:hidden}
+@supports (height:100dvh){html,body{height:100dvh}}
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
 
 /* ═══════════════ APP SHELL ═══════════════ */
 #app{display:grid;grid-template-rows:56px 1fr;height:100vh}
-#main{display:grid;grid-template-columns:290px 1fr;overflow:hidden}
+@supports (height:100dvh){ #app{height:100dvh} }
+#main{display:grid;grid-template-columns:290px 1fr;overflow:hidden;position:relative}
+
+/* Hamburger (drawer toggle) — hanya tampil di tablet/HP */
+.hamburger{
+  display:none;flex-direction:column;justify-content:center;gap:4px;
+  width:34px;height:34px;border:1px solid var(--border2);border-radius:var(--r6);
+  background:var(--bg2);cursor:pointer;flex-shrink:0;
+}
+.hamburger span{width:16px;height:2px;background:var(--t2);border-radius:1px;margin:0 auto;transition:.25s}
+#app.sidebar-open .hamburger span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+#app.sidebar-open .hamburger span:nth-child(2){opacity:0}
+#app.sidebar-open .hamburger span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+
+/* Overlay backdrop untuk sidebar drawer */
+.sb-overlay{
+  display:none;position:fixed;inset:56px 0 0 0;background:rgba(3,8,16,.6);
+  z-index:190;opacity:0;pointer-events:none;transition:opacity .25s ease;
+}
+
+@media(max-width:1024px){
+  .hamburger{display:flex}
+  #main{grid-template-columns:1fr}
+  #sidebar{
+    position:fixed;top:56px;left:0;bottom:0;width:290px;max-width:82vw;
+    z-index:200;transform:translateX(-100%);
+    transition:transform .28s cubic-bezier(.4,0,.2,1);
+    box-shadow:0 0 40px rgba(0,0,0,.5);
+  }
+  #app.sidebar-open #sidebar{transform:translateX(0)}
+  .sb-overlay{display:block}
+  #app.sidebar-open .sb-overlay{opacity:1;pointer-events:auto}
+}
+@media(min-width:1025px){.sb-overlay{display:none !important}}
+
+@media(max-width:900px){
+  #stats{grid-template-columns:repeat(3,1fr)}
+}
+@media(max-width:640px){
+  header{padding:0 10px;gap:8px}
+  .quick-search{margin-left:0 !important;max-width:none}
+  .btn-label{display:none}
+  .delay-tag{display:none}
+  #stats{grid-template-columns:repeat(2,1fr);gap:6px}
+  .sc{padding:10px}
+  .sc .v{font-size:18px}
+  #tbl-sec{padding:0 8px 8px}
+  table{min-width:720px}
+}
 
 /* ═══════════════ HEADER ═══════════════ */
 header{
@@ -786,20 +836,17 @@ tbody tr{animation:rowIn .2s ease both}
 .pick-enter{animation:pickIn .25s ease both}
 @keyframes pickIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 </style>
+<link rel="stylesheet" href="/static/responsive.css">
 </head>
 <body>
 <div id="app">
 
 <!-- ══════════════ HEADER ══════════════════════════════════════ -->
 <header>
+  <button class="hamburger" id="hamburger" onclick="toggleSidebar()" aria-label="Menu"><span></span><span></span><span></span></button>
   <div class="logo">
-    <div class="logo-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke="white">
-        <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
-        <polyline points="16 7 22 7 22 13"/>
-      </svg>
-    </div>
-    <span class="logo-text">GUFRON Screener</span>
+    <div class="logo-icon"><img src="/static/logo.png" alt="IHSG Screener" width="30" height="30"></div>
+    <span class="logo-text">IHSG Screener</span>
   </div>
 
   <div class="quick-search" style="margin-left:20px">
@@ -817,44 +864,39 @@ tbody tr{animation:rowIn .2s ease both}
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
         <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
       </svg>
-      Generate Report
+      <span class="btn-label">Generate Report</span>
     </button>
     <div class="tools-wrap" id="tools-wrap">
       <button class="tools-btn" onclick="toggleTools()">
-        🔥 Tools ▾
+        <span class="btn-label">Tools</span> ▾
       </button>
       <div class="tools-dd" id="tools-dd">
         <a class="tools-dd-item" href="/ara" target="_blank" onclick="closeTools()">
-          <span class="dd-icon">🚀</span>
-          <div>
+                    <div>
             <div class="dd-text">ARA Hunting</div>
             <div class="dd-sub">Scan emiten potensi Auto Rejection Atas</div>
           </div>
         </a>
         <a class="tools-dd-item" href="/bandarmology" target="_blank" onclick="closeTools()">
-          <span class="dd-icon">🕵️</span>
-          <div>
+                    <div>
             <div class="dd-text">Bandarmology Signal</div>
             <div class="dd-sub">Deteksi akumulasi bandar sebelum harga naik</div>
           </div>
         </a>
         <a class="tools-dd-item" href="/invest-suggestion" target="_blank" onclick="closeTools()">
-          <span class="dd-icon">🌱</span>
-          <div>
+                    <div>
             <div class="dd-text">Invest Suggestion</div>
             <div class="dd-sub">Saran emiten terbaik untuk investasi jangka panjang</div>
           </div>
         </a>
         <a class="tools-dd-item" href="/dividen" target="_blank" onclick="closeTools()">
-          <span class="dd-icon">💰</span>
-          <div>
+                    <div>
             <div class="dd-text">Kalender Dividen</div>
             <div class="dd-sub">Jadwal dividen emiten per bulan Jan–Des</div>
           </div>
         </a>
         <a class="tools-dd-item" href="/crypto" target="_blank" onclick="closeTools()">
-          <span class="dd-icon">🐋</span>
-          <div>
+                    <div>
             <div class="dd-text">Crypto Screener &amp; Whale Tracker</div>
             <div class="dd-sub">AI screener crypto + deteksi pergerakan big whale</div>
           </div>
@@ -869,11 +911,13 @@ tbody tr{animation:rowIn .2s ease both}
 <!-- ══════════════ MAIN ════════════════════════════════════════ -->
 <div id="main">
 
+  <div class="sb-overlay" id="sb-overlay" onclick="toggleSidebar(false)"></div>
+
   <!-- ── SIDEBAR ── -->
   <div id="sidebar">
     <div class="sb-tabs">
-      <div class="sb-tab active" onclick="switchTab('sc')">📡 Screening</div>
-      <div class="sb-tab" onclick="switchTab('wl')">⭐ Watchlist</div>
+      <div class="sb-tab active" onclick="switchTab('sc')">Screening</div>
+      <div class="sb-tab" onclick="switchTab('wl')">Watchlist</div>
     </div>
     <div class="sb-body">
 
@@ -1005,7 +1049,7 @@ tbody tr{animation:rowIn .2s ease both}
 
 <!-- ══════════════ LOADING OVERLAY ════════════════════════════ -->
 <div id="overlay">
-  <div class="ov-logo">GUFRON Screener</div>
+  <div class="ov-logo">IHSG Screener</div>
   <div class="ov-spin"></div>
   <div class="ov-tk" id="ov-tk">Mempersiapkan...</div>
   <div class="ov-bar-wrap"><div class="ov-bar" id="ov-bar"></div></div>
@@ -1222,6 +1266,15 @@ tbody tr{animation:rowIn .2s ease both}
 </div>
 
 <script>
+// ═══ SIDEBAR DRAWER (tablet/HP) ═══════════════════════════
+function toggleSidebar(force){
+  const app=document.getElementById('app');
+  const open = typeof force==='boolean' ? force : !app.classList.contains('sidebar-open');
+  app.classList.toggle('sidebar-open', open);
+}
+// tutup drawer otomatis saat balik ke layar besar
+window.addEventListener('resize', ()=>{ if(window.innerWidth>1024) toggleSidebar(false); });
+
 // ═══ STATE ═══════════════════════════════════════════════
 let ALL=[], DISP=[], filt='all', sortKey='total_score', sortAsc=false, activeTk=null, myChart=null, chips=[];
 let REPORT_DATA={};  // store report ticker data for openDP fallback
@@ -1286,6 +1339,7 @@ function qsRun(){
 
 // ═══ RUN SCREENING (SSE) ══════════════════════════════════
 function runScreen(){
+  toggleSidebar(false);
   const max=document.getElementById('max-r').value;
   showOv();ALL=[];
   const es=new EventSource(`/api/screen/stream?max=${max}`);
@@ -1306,6 +1360,7 @@ function runScreen(){
 // ═══ RUN WATCHLIST ════════════════════════════════════════
 async function runWatch(){
   if(!chips.length){alert('Tambahkan kode saham terlebih dahulu di panel Watchlist, atau ketik di kotak pencarian atas.');return;}
+  toggleSidebar(false);
   showOv();
   document.getElementById('ov-tk').textContent='Menganalisis '+chips.join(', ')+'...';
   try{
